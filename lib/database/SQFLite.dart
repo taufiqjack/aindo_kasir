@@ -23,7 +23,7 @@ class SQFliteBarang {
     return await openDatabase(path, version: 1, onOpen: (sql) {},
         onCreate: (Database db, int version) async {
       await db.execute(
-          'create table Barang( IDBarang INTEGER PRIMARY KEY, Nama TEXT UNIQUE, Jenis INTEGER, HargaBeli TEXT, HargaJual TEXT, Gambar TEXT,  Satuan TEXT, StatusAktif INTEGER)');
+          'create table Barang( IDBarang INTEGER PRIMARY KEY, Nama TEXT, KodeBarang TEXT UNIQUE, Jenis INTEGER, HargaBeli TEXT, HargaJual TEXT, Gambar TEXT,  Satuan TEXT, StatusAktif INTEGER)');
       await db.execute(
           'create table JenisBarang( IDJenis INTEGER PRIMARY KEY, Nama TEXT, StatusAktif INTEGER)');
       await db.execute(
@@ -41,6 +41,7 @@ class SQFliteBarang {
   insertBarang(Barang model) async {
     var row = {
       'IDBarang': model.iDBarang,
+      'KodeBarang': model.kodeBarang,
       'Nama': model.nama,
       'Jenis': model.jenis,
       'HargaBeli': model.hargaBeli,
@@ -221,11 +222,11 @@ class SQFliteBarang {
     return list;
   }
 
-  Future<List<Barang>> getBarangScan(String nama) async {
+  Future<List<Barang>> getBarangScan(String kodeBarang) async {
     Database db = await database;
 
-    var result =
-        await db.rawQuery('SELECT * FROM BARANG WHERE Nama LIKE $nama');
+    var result = await db
+        .rawQuery('SELECT * FROM BARANG WHERE KodeBarang LIKE $kodeBarang');
     List<Barang> list =
         result.isNotEmpty ? result.map((e) => Barang.fromJson(e)).toList() : [];
     return list;

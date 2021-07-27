@@ -57,66 +57,13 @@ class _LoginAppsState extends State<LoginApps> {
     if (msg['msg'] == 'Berhasil') {
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.setBool('success', true);
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Center(
-                child: Column(
-                  children: [
-                    Text(
-                      msg['msg'],
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15),
-                    ),
-                    Icon(
-                      Icons.done,
-                      color: Colors.green,
-                      size: 50,
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                Center(
-                  child: TextButton(
-                      onPressed: () {
-                        setState(() {
-                          if (formKey.currentState!.validate()) {
-                            Navigator.of(context).pop();
-                          }
-                        });
-                      },
-                      child: Text('OK'),
-                      style: ButtonStyle(
-                          shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8))),
-                          foregroundColor:
-                              MaterialStateProperty.all(Colors.white),
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.blue.shade800),
-                          fixedSize: MaterialStateProperty.all(Size(70, 30)))),
-                ),
-              ],
-            );
-          });
-
-      // setState(() {
-      //   uname = msg['username'];
-      //   password = msg['password'];
-
-      //   isAsync = true;
-      // });
 
       Future.delayed(Duration(seconds: 2), () {
         Navigator.push(
           context,
           PageTransition(
             type: PageTransitionType.fade,
-            child: MenuKasir(
-              list: [],
-            ),
+            child: MenuKasir(),
           ),
         );
       });
@@ -193,137 +140,133 @@ class _LoginAppsState extends State<LoginApps> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.indigo.shade900,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: WillPopScope(
-          onWillPop: exitApp,
-          child: ModalProgressHUD(
-            inAsyncCall: isAsync,
-            progressIndicator: CircularProgressIndicator(),
-            opacity: 0.5,
-            child: SingleChildScrollView(
-              child: Center(
-                child: Container(
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 50,
-                        margin: EdgeInsets.all(125),
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
+      body: WillPopScope(
+        onWillPop: exitApp,
+        child: ModalProgressHUD(
+          inAsyncCall: isAsync,
+          progressIndicator: CircularProgressIndicator(),
+          opacity: 0.5,
+          child: SingleChildScrollView(
+            child: Center(
+              child: Container(
+                child: Column(
+                  children: [
+                    Container(
+                      height: 50,
+                      margin: EdgeInsets.all(125),
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(
+                            5.0,
+                          ),
+                        ),
+                      ),
+                      child: Image.asset(
+                        "assets/images/fiesto.png",
+                        height: 100,
+                        width: 120,
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(40),
+                      height: 350,
+                      width: 300,
+                      decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(
-                              5.0,
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0))),
+                      child: SingleChildScrollView(
+                        child: Form(
+                          key: formKey,
+                          child: Column(children: [
+                            new Text(
+                              "Login Akun",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.indigo.shade900,
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ),
-                        child: Image.asset(
-                          "assets/images/fiesto.png",
-                          height: 100,
-                          width: 120,
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(40),
-                        height: 350,
-                        width: 300,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0))),
-                        child: SingleChildScrollView(
-                          child: Form(
-                            key: formKey,
-                            child: Column(children: [
-                              new Text(
-                                "Login Akun",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.indigo.shade900,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              new TextFormField(
-                                controller: usernameController,
-                                textInputAction: TextInputAction.next,
-                                decoration:
-                                    InputDecoration(hintText: 'Username'),
-                                validator: (value) {
-                                  if (value.toString().isEmpty) {
-                                    return 'Username tidak boleh kosong';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              new TextFormField(
-                                controller: passwordController,
-                                textInputAction: TextInputAction.done,
-                                obscureText: obsecureText,
-                                decoration: InputDecoration(
-                                    hintText: 'Password',
-                                    suffixIcon: GestureDetector(
-                                      child: Icon(
-                                        obsecureText
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                        color: obsecureText
-                                            ? Colors.grey
-                                            : Colors.blue.shade900,
-                                      ),
-                                      onTap: () {
-                                        togglePass();
-                                      },
-                                    )),
-                                validator: (value) {
-                                  if (value!.trim().isEmpty) {
-                                    return 'Password tidak boleh kosong';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(
-                                height: 40,
-                              ),
-                              SingleChildScrollView(
-                                child: TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        if (formKey.currentState!.validate()) {
-                                          submit();
-
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                        }
-                                      });
+                            SizedBox(
+                              height: 10,
+                            ),
+                            new TextFormField(
+                              controller: usernameController,
+                              textInputAction: TextInputAction.next,
+                              decoration: InputDecoration(hintText: 'Username'),
+                              validator: (value) {
+                                if (value.toString().isEmpty) {
+                                  return 'Username tidak boleh kosong';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            new TextFormField(
+                              controller: passwordController,
+                              textInputAction: TextInputAction.done,
+                              obscureText: obsecureText,
+                              decoration: InputDecoration(
+                                  hintText: 'Password',
+                                  suffixIcon: GestureDetector(
+                                    child: Icon(
+                                      obsecureText
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: obsecureText
+                                          ? Colors.grey
+                                          : Colors.blue.shade900,
+                                    ),
+                                    onTap: () {
+                                      togglePass();
                                     },
-                                    child: Text('LOGIN'),
-                                    style: ButtonStyle(
-                                        shape: MaterialStateProperty.all(
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8))),
-                                        foregroundColor:
-                                            MaterialStateProperty.all(
-                                                Colors.white),
-                                        backgroundColor:
-                                            MaterialStateProperty.all(
-                                                Colors.indigo.shade900),
-                                        fixedSize: MaterialStateProperty.all(
-                                            Size(150, 50)))),
-                              ),
-                            ]),
-                          ),
+                                  )),
+                              validator: (value) {
+                                if (value!.trim().isEmpty) {
+                                  return 'Password tidak boleh kosong';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(
+                              height: 40,
+                            ),
+                            SingleChildScrollView(
+                              child: TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      if (formKey.currentState!.validate()) {
+                                        submit();
+
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                      }
+                                    });
+                                  },
+                                  child: Text('LOGIN'),
+                                  style: ButtonStyle(
+                                      shape: MaterialStateProperty.all(
+                                          RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8))),
+                                      foregroundColor:
+                                          MaterialStateProperty.all(
+                                              Colors.white),
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              Colors.indigo.shade900),
+                                      fixedSize: MaterialStateProperty.all(
+                                          Size(150, 50)))),
+                            ),
+                          ]),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

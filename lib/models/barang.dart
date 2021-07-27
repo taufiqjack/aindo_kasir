@@ -11,6 +11,7 @@ String barangToJson(List<Barang> data) =>
 class Barang {
   const Barang({
     required this.iDBarang,
+    required this.kodeBarang,
     required this.nama,
     required this.jenis,
     required this.hargaBeli,
@@ -21,6 +22,7 @@ class Barang {
   });
 
   final int iDBarang;
+  final String kodeBarang;
   final String nama;
   final int jenis;
   final String hargaBeli;
@@ -31,6 +33,7 @@ class Barang {
 
   factory Barang.fromJson(Map<String, dynamic> json) => Barang(
       iDBarang: json['IDBarang'],
+      kodeBarang: json['KodeBarang'],
       nama: json['Nama'],
       jenis: json['Jenis'],
       hargaBeli: json['HargaBeli'],
@@ -41,6 +44,7 @@ class Barang {
 
   Map<String, dynamic> toJson() => {
         'IDBarang': iDBarang,
+        'KodeBarang': kodeBarang,
         'Nama': nama,
         'Jenis': jenis,
         'HargaBeli': hargaBeli,
@@ -52,6 +56,7 @@ class Barang {
 
   Barang clone() => Barang(
       iDBarang: iDBarang,
+      kodeBarang: kodeBarang,
       nama: nama,
       jenis: jenis,
       hargaBeli: hargaBeli,
@@ -62,6 +67,7 @@ class Barang {
 
   Barang copyWith(
           {int? iDBarang,
+          String? kodeBarang,
           String? nama,
           int? jenis,
           String? hargaBeli,
@@ -71,6 +77,7 @@ class Barang {
           int? statusAktif}) =>
       Barang(
         iDBarang: iDBarang ?? this.iDBarang,
+        kodeBarang: kodeBarang ?? this.kodeBarang,
         nama: nama ?? this.nama,
         jenis: jenis ?? this.jenis,
         hargaBeli: hargaBeli ?? this.hargaBeli,
@@ -85,6 +92,7 @@ class Barang {
       identical(this, other) ||
       other is Barang &&
           iDBarang == other.iDBarang &&
+          kodeBarang == other.kodeBarang &&
           nama == other.nama &&
           jenis == other.jenis &&
           hargaBeli == other.hargaBeli &&
@@ -96,6 +104,7 @@ class Barang {
   @override
   int get hashCode =>
       iDBarang.hashCode ^
+      kodeBarang.hashCode ^
       nama.hashCode ^
       jenis.hashCode ^
       hargaBeli.hashCode ^

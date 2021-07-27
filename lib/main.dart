@@ -2,9 +2,12 @@ import 'dart:io';
 import 'package:aindo_kasir/layout/login.dart';
 import 'package:aindo_kasir/layout/menu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
+ValueNotifier itemsNotifier = ValueNotifier([]);
 Future<void> main() async {
   HttpOverrides.global = new MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +15,8 @@ Future<void> main() async {
   SharedPreferences sharedPreferenceces = await SharedPreferences.getInstance();
   var status = sharedPreferenceces.getBool('success') ?? false;
   print("status = $status");
+  FlutterStatusbarcolor.setStatusBarColor(Colors.white);
+
   runApp(MaterialApp(
     builder: (context, widget) => ResponsiveWrapper.builder(
       BouncingScrollWrapper.builder(context, widget!),
@@ -25,11 +30,10 @@ Future<void> main() async {
       ],
     ),
     debugShowCheckedModeBanner: false,
-    home: status
-        ? MenuKasir(
-            list: [],
-          )
-        : LoginApps(),
+    home: AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: status ? MenuKasir() : LoginApps(),
+    ),
   ));
 }
 

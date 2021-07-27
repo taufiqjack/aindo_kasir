@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:aindo_kasir/database/SQFLite.dart';
 import 'package:aindo_kasir/layout/payment_details.dart';
-import 'package:aindo_kasir/models/barang.dart';
 import 'package:aindo_kasir/models/penjualan.dart';
 import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:flutter/material.dart';
@@ -11,11 +12,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'package:tanggal_indonesia/tanggal_indonesia.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchPrintPage extends StatefulWidget {
-  final Barang barangCetak;
-  final int index;
-  SearchPrintPage({required this.barangCetak, required this.index});
+  SearchPrintPage({Key? key}) : super(key: key);
 
   @override
   _SearchPrintPageState createState() => _SearchPrintPageState();
@@ -26,6 +26,23 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
   List availableBluetoothDevices = [];
 
   List<Penjualan> listBarang = [];
+
+  List<Map<dynamic, dynamic>> listSaveOrder = [];
+  String? jumlahHarga;
+
+  getData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final cart = prefs.getStringList('cart')!;
+    final cartJumlahHarga = prefs.getString('jumlahHarga');
+    setState(() {
+      cart.forEach((item) {
+        listSaveOrder.add(jsonDecode(item));
+      });
+    });
+    setState(() {
+      jumlahHarga = cartJumlahHarga.toString();
+    });
+  }
 
   @override
   void initState() {
@@ -50,6 +67,7 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
     }).catchError((error) {
       print(error);
     });
+    getData();
   }
 
   @override
@@ -71,10 +89,7 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
               context,
               PageTransition(
                 type: PageTransitionType.fade,
-                child: PaymentDetails(
-                  dataPenjualan: widget.barangCetak,
-                  itemCount: widget.index,
-                ),
+                child: PaymentDetails(),
               ),
             );
           },
@@ -218,12 +233,10 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
     CapabilityProfile profile = await CapabilityProfile.load();
     final generator = Generator(PaperSize.mm58, profile);
 
-    // Print QR Code using native function
     bytes += generator.qrcode('http://www.fiesto.com');
 
     bytes += generator.hr();
 
-    // Print Barcode using native function
     final List<int> barData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 4];
     bytes += generator.barcode(Barcode.upcA(barData));
 
@@ -278,49 +291,68 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
           styles: PosStyles(align: PosAlign.left, bold: true)),
     ]);
 
-    bytes += generator.row([
-      PosColumn(
-          text: '${widget.barangCetak.nama}',
-          width: 12,
-          styles: PosStyles(
-            align: PosAlign.left,
-          )),
-    ]);
+    for (int i = 0; i < listSaveOrder.length; i++) {
+      bytes += generator.row([
+        PosColumn(
+            text: '${listSaveOrder[i]['Nama']}',
+            width: 12,
+            styles: PosStyles(
+              align: PosAlign.left,
+            )),
+      ]);
 
-    bytes += generator.row([
-      PosColumn(
-          text: '${widget.index}',
-          width: 2,
-          styles: PosStyles(
-            align: PosAlign.left,
-          )),
-      PosColumn(text: 'x', width: 2, styles: PosStyles(align: PosAlign.left)),
-      PosColumn(
-          text: '@${rupiah(widget.barangCetak.hargaJual)}',
-          width: 4,
-          styles: PosStyles(align: PosAlign.left)),
-      PosColumn(
-          text:
-              '${rupiah(widget.index * int.parse(widget.barangCetak.hargaJual))}',
-          width: 4,
-          styles: PosStyles(align: PosAlign.right)),
-    ]);
+      bytes += generator.row([
+        PosColumn(
+            text: '${listSaveOrder[i]['quantity']}',
+            width: 2,
+            styles: PosStyles(
+              align: PosAlign.left,
+            )),
+        PosColumn(text: 'x', width: 2, styles: PosStyles(align: PosAlign.left)),
+        PosColumn(
+            text: '@${rupiah(listSaveOrder[i]['hargaJual'])}',
+            width: 4,
+            styles: PosStyles(align: PosAlign.left)),
+        PosColumn(
+            text: rupiah(int.parse(listSaveOrder[i]['quantity']) *
+                int.parse(listSaveOrder[i]['hargaJual'])),
+            width: 4,
+            styles: PosStyles(align: PosAlign.right)),
+      ]);
+    }
 
     bytes += generator.hr();
 
     bytes += generator.row([
       PosColumn(
-          text: 'TOTAL',
-          width: 4,
+          text: 'TOTAL :',
+          width: 8,
           styles: PosStyles(
-            align: PosAlign.left,
+            align: PosAlign.right,
             height: PosTextSize.size1,
             width: PosTextSize.size1,
           )),
       PosColumn(
-          text:
-              '${rupiah(widget.index * int.parse(widget.barangCetak.hargaJual))}',
+          text: '${rupiah(jumlahHarga)}',
+          width: 4,
+          styles: PosStyles(
+            align: PosAlign.right,
+            height: PosTextSize.size1,
+            width: PosTextSize.size1,
+          )),
+    ]);
+    bytes += generator.row([
+      PosColumn(
+          text: 'TUNAI :',
           width: 8,
+          styles: PosStyles(
+            align: PosAlign.right,
+            height: PosTextSize.size1,
+            width: PosTextSize.size1,
+          )),
+      PosColumn(
+          text: '${rupiah(listBarang.first.bayar)}',
+          width: 4,
           styles: PosStyles(
             align: PosAlign.right,
             height: PosTextSize.size1,
@@ -328,7 +360,26 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
           )),
     ]);
 
-    bytes += generator.hr(ch: '=', linesAfter: 1);
+    bytes += generator.row([
+      PosColumn(
+          text: 'KEMBALI :',
+          width: 8,
+          styles: PosStyles(
+            align: PosAlign.right,
+            height: PosTextSize.size1,
+            width: PosTextSize.size1,
+          )),
+      PosColumn(
+          text: '${rupiah(listBarang.first.kembalian)}',
+          width: 4,
+          styles: PosStyles(
+            align: PosAlign.right,
+            height: PosTextSize.size1,
+            width: PosTextSize.size1,
+          )),
+    ]);
+
+    bytes += generator.hr(ch: '=');
 
     bytes += generator.text('Terima Kasih',
         styles: PosStyles(align: PosAlign.center, bold: true), linesAfter: 1);

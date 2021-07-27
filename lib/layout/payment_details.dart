@@ -1,9 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:aindo_kasir/database/SQFLite.dart';
-import 'package:aindo_kasir/layout/orderpages.dart';
+import 'package:aindo_kasir/layout/menu.dart';
 import 'package:aindo_kasir/layout/search_printer.dart';
-import 'package:aindo_kasir/models/barang.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:page_transition/page_transition.dart';
@@ -15,11 +15,10 @@ import 'dart:ui' as ui;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:aindo_kasir/controller/global.dart' as global;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PaymentDetails extends StatefulWidget {
-  final Barang dataPenjualan;
-  final int itemCount;
-  PaymentDetails({required this.dataPenjualan, required this.itemCount});
+  PaymentDetails({Key? key}) : super(key: key);
 
   @override
   _PaymentDetailsState createState() => _PaymentDetailsState();
@@ -31,6 +30,23 @@ class _PaymentDetailsState extends State<PaymentDetails> {
   final GlobalKey _globalKey = GlobalKey();
 
   final f = new DateFormat('dd-MM-yyyy HH:mm:ss');
+
+  List<Map<dynamic, dynamic>> listSaveOrder = [];
+  String? jumlahHarga;
+
+  getData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final cart = prefs.getStringList('newCart')!;
+    final cartJumlahHarga = prefs.getString('newJumlahHarga');
+    setState(() {
+      cart.forEach((item) {
+        listSaveOrder.add(jsonDecode(item));
+      });
+    });
+    setState(() {
+      jumlahHarga = cartJumlahHarga.toString();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,17 +68,14 @@ class _PaymentDetailsState extends State<PaymentDetails> {
               context,
               PageTransition(
                 type: PageTransitionType.fade,
-                child: OrderPages(
-                  barangData: widget.dataPenjualan,
-                  item: widget.itemCount,
-                ),
+                child: MenuKasir(),
               ),
             );
           },
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(15),
         child: Center(
           child: TakeScreenshot(
             controller: takeScreenshotController,
@@ -72,105 +85,147 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                 height: 400,
                 width: 350,
                 color: Colors.white,
-                child: Column(children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.black,
-                          radius: 30,
-                          child: Image.asset(
-                            'assets/images/fiesto.png',
-                            height: 50,
-                            width: 50,
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 4, horizontal: 3),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.black,
+                              radius: 30,
+                              child: Image.asset(
+                                'assets/images/fiesto.png',
+                                height: 50,
+                                width: 50,
+                              ),
+                            ),
+                          ),
+                          Padding(padding: EdgeInsets.all(10)),
+                          Stack(
+                            alignment: Alignment.topCenter,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  'FIESTO INFORMATIKA INDONESIA',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 30),
+                                child: Text(
+                                  'Jl. Ngagel Jaya Tengah III, Surabaya',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 50),
+                                child: Text(
+                                  '08123456789',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 110),
+                      child: Container(
+                        height: 50,
+                        width: 500,
+                        child: Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 30, vertical: 1),
+                          child: FutureBuilder(
+                            future: SQFliteBarang.sql.getPenjualanByLatest(),
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              print(
+                                  'data :${global.globalPenjualan.nomorTr.toString()}');
+                              return snapshot.hasData
+                                  ? ListView.builder(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: snapshot.data.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        final x = snapshot.data[index];
+
+                                        return Text(
+                                            'No. Order : ${x.nomorTr}\nWaktu : ${f.format(DateTime.parse(x.tanggalJual))}');
+                                      },
+                                    )
+                                  : CircularProgressIndicator();
+                            },
                           ),
                         ),
-                        Padding(padding: EdgeInsets.all(10)),
-                        Column(
-                          children: [
-                            Text(
-                              'BEST BRAND',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Padding(padding: EdgeInsets.all(5)),
-                            Text(
-                              'Jl. Ngagel Jaya Tengah III, Surabaya',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            Text(
-                              '08123456789',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 50,
-                    width: 500,
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 30, vertical: 5),
-                      child: FutureBuilder(
-                        future: SQFliteBarang.sql.getPenjualanByLatest(),
-                        builder:
-                            (BuildContext context, AsyncSnapshot snapshot) {
-                          print(
-                              'data :${global.globalPenjualan.nomorTr.toString()}');
-                          return snapshot.hasData
-                              ? ListView.builder(
-                                  itemCount: snapshot.data.length,
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 150),
+                      child: Container(
+                        height: 4000,
+                        width: 500,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(30, 5, 10, 10),
+                              child: ListView.builder(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: listSaveOrder.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    final x = snapshot.data[index];
-
-                                    return Text(
-                                        'No. Order : ${x.nomorTr}\nWaktu : ${f.format(DateTime.parse(x.tanggalJual))}');
-                                  },
-                                )
-                              : CircularProgressIndicator();
-                        },
-                      ),
-                    ),
-                  ),
-                  Column(
-                    children: [
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 30, vertical: 5),
-                        child: Row(
-                          children: [
-                            Text('${widget.dataPenjualan.nama}'),
-                            Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10)),
-                            Text('${widget.itemCount}'),
-                            Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10)),
-                            Text(
-                                '@${rupiah(int.parse(widget.dataPenjualan.hargaJual))}'),
-                            Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10)),
-                            Text(
-                                '${rupiah(widget.itemCount * int.parse(widget.dataPenjualan.hargaJual))}'),
+                                    final barangData = listSaveOrder[index];
+                                    return Row(
+                                      children: [
+                                        Text('${barangData['Nama']}'),
+                                        Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 10)),
+                                        Text('${barangData['quantity']}'),
+                                        Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 15)),
+                                        Text(rupiah(
+                                            '@${barangData['hargaJual']}')),
+                                        Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10)),
+                                        Text(rupiah(int.parse(
+                                                '${barangData['quantity']}') *
+                                            int.parse(
+                                                barangData['hargaJual']))),
+                                      ],
+                                    );
+                                  }),
+                            ),
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 30),
-                        child: Row(
-                          children: [],
-                        ),
-                      ),
-                      Padding(
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 245),
+                      child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 30),
                         child: Divider(
-                          thickness: 2,
+                          thickness: 3,
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 30),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 260),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(30, 2, 10, 10),
                         child: Row(
                           children: [
                             Text(
@@ -181,10 +236,10 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 75),
+                              padding: EdgeInsets.symmetric(horizontal: 70),
                             ),
                             Text(
-                              '${rupiah(widget.itemCount * int.parse(widget.dataPenjualan.hargaJual))}',
+                              '${rupiah(jumlahHarga)}',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -193,22 +248,34 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  Padding(padding: EdgeInsets.all(30)),
-                  Text(
-                    'BARANG YANG SUDAH DIBELI',
-                    style: TextStyle(
-                      fontSize: 12,
                     ),
-                  ),
-                  Text(
-                    'TIDAK BISA DIKEMBALIKAN',
-                    style: TextStyle(
-                      fontSize: 12,
-                    ),
-                  ),
-                ]),
+                    Padding(
+                        padding: EdgeInsets.only(top: 300),
+                        child: Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                'BARANG YANG SUDAH DIBELI',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Text(
+                                'TIDAK BISA DIKEMBALIKAN',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )),
+                  ],
+                ),
               ),
             ),
           ),
@@ -251,10 +318,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                       context,
                       PageTransition(
                           type: PageTransitionType.fade,
-                          child: SearchPrintPage(
-                            barangCetak: widget.dataPenjualan,
-                            index: widget.itemCount,
-                          )));
+                          child: SearchPrintPage()));
                 },
                 label: Text(
                   'Print',
@@ -305,6 +369,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
     setState(() {
       SQFliteBarang.sql.getPenjualanByLatest();
     });
+    getData();
   }
 
   @override

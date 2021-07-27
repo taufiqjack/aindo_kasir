@@ -47,9 +47,10 @@ dependencies:
   connectivity:
   data_connection_checker_tv:
   responsive_framework:
-  anim_search_bar:
+  animated_search_bar:
   page_transition:
   flutter_barcode_scanner:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
