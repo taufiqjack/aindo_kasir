@@ -50,7 +50,7 @@ class _LoginAppsState extends State<LoginApps> {
     var data = {'username': uname, 'password': password, 'success': isAsync};
 
     var response =
-        await http.post(Uri.parse(BaseUrl.loginFTP), body: json.encode(data));
+        await http.post(Uri.parse(BaseUrl.login), body: json.encode(data));
 
     Map<String, dynamic> msg = jsonDecode(response.body);
 
@@ -71,6 +71,15 @@ class _LoginAppsState extends State<LoginApps> {
       passwordController.clear();
       loadFromAPI();
       loadFromJenisBarangAPI();
+
+      var token = msg['data']['token'];
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? message = prefs.getString('token');
+      message = jsonEncode(token.toString());
+      prefs.setString('token', message);
+      print('token : $token');
+      
     } else if (msg['msg'] == 'Username atau Password salah') {
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.setBool('success', false);
@@ -131,6 +140,9 @@ class _LoginAppsState extends State<LoginApps> {
 
         print("Koneksi Internet Tersedia");
       } else {
+        setState(() {
+          isLoading = false;
+        });
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text("Tidak Ada Jaringan!")));
       }
@@ -234,34 +246,39 @@ class _LoginAppsState extends State<LoginApps> {
                             SizedBox(
                               height: 40,
                             ),
-                            SingleChildScrollView(
-                              child: TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      if (formKey.currentState!.validate()) {
-                                        submit();
+                            !isLoading
+                                ? SingleChildScrollView(
+                                    child: TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (formKey.currentState!
+                                                .validate()) {
+                                              submit();
 
-                                        setState(() {
-                                          isLoading = true;
-                                        });
-                                      }
-                                    });
-                                  },
-                                  child: Text('LOGIN'),
-                                  style: ButtonStyle(
-                                      shape: MaterialStateProperty.all(
-                                          RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8))),
-                                      foregroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.white),
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.indigo.shade900),
-                                      fixedSize: MaterialStateProperty.all(
-                                          Size(150, 50)))),
-                            ),
+                                              setState(() {
+                                                isLoading = true;
+                                              });
+                                            }
+                                          });
+                                        },
+                                        child: Text('LOGIN'),
+                                        style: ButtonStyle(
+                                            shape: MaterialStateProperty.all(
+                                                RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8))),
+                                            foregroundColor:
+                                                MaterialStateProperty.all(
+                                                    Colors.white),
+                                            backgroundColor:
+                                                MaterialStateProperty.all(
+                                                    Colors.indigo.shade900),
+                                            fixedSize:
+                                                MaterialStateProperty.all(
+                                                    Size(150, 50)))),
+                                  )
+                                : Container(),
                           ]),
                         ),
                       ),
@@ -321,6 +338,8 @@ class _LoginAppsState extends State<LoginApps> {
       apiProvider.getAllBarangtoLocal();
       SQFliteBarang.sql.getBarang();
       SQFliteBarang.sql.getBarangFromJenis();
+      SQFliteBarang.sql.getBarangFromJenis3();
+      SQFliteBarang.sql.getBarangFromJenis4();
     });
 
     print(SQFliteBarang.sql.getBarang.toString());

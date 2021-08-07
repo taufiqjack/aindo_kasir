@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:aindo_kasir/database/SQFLite.dart';
 import 'package:aindo_kasir/layout/menu.dart';
 import 'package:aindo_kasir/layout/payment_details.dart';
+import 'package:aindo_kasir/models/api.dart';
 import 'package:aindo_kasir/models/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:tanggal_indonesia/tanggal_indonesia.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 // late final int nomorTr;
 
@@ -26,13 +28,14 @@ class _OrderPagesState extends State<OrderPages> {
   final nomBelController = TextEditingController();
   final kembalianController = TextEditingController();
   String hasilText = '0';
+  final f = new DateFormat('yyyyMMdd');
 
   final GlobalKey<FormState> formKey = GlobalKey();
 
   Future insertOrder() async {
     var data = {
       'IDTr': null,
-      'NomorTr': 'FI00',
+      'NomorTr': f.format(DateTime.now()).toString() + '0000',
       'TanggalJual': DateTime.now().toString(),
       'Diskon': 0.0,
       'DiskonRp': 0,
@@ -68,6 +71,7 @@ class _OrderPagesState extends State<OrderPages> {
   int? jumlahHarga;
   int? newJumlahHarga;
   int? totalHargaBeli;
+  int? jumlahHargaScan;
   // int totalHargaBeli = 0;
 
   @override
@@ -81,6 +85,7 @@ class _OrderPagesState extends State<OrderPages> {
     final cart = prefs.getStringList('cart')!;
 
     final cartJumlahHarga = prefs.getInt('jumlahHarga');
+    final cartHargaScan = prefs.getInt('jumlahHargaScan');
     final cartJumlahHargaBeli = prefs.getInt('jumlahHargaBeli');
     setState(() {
       cart.forEach((item) {
@@ -90,9 +95,10 @@ class _OrderPagesState extends State<OrderPages> {
     setState(() {
       jumlahHarga = cartJumlahHarga;
       totalHargaBeli = cartJumlahHargaBeli;
+      jumlahHargaScan = cartHargaScan;
 
-      print('jumlah : $jumlahHarga');
-      print('jumlah : $totalHargaBeli');
+      print('jumlah hargaJual : $jumlahHarga');
+      print('jumlah hargaBeli: $totalHargaBeli');
     });
   }
 
@@ -133,8 +139,8 @@ class _OrderPagesState extends State<OrderPages> {
               child: Column(
                 children: [
                   ListTile(
-                    leading: Image.asset(
-                      "assets/images/${barangData['Gambar']}",
+                    leading: Image.network(
+                      "${BaseUrl.pathImage}/${barangData['Gambar']}",
                     ),
                     title: Text(
                       '${barangData['Nama']}',
@@ -164,9 +170,9 @@ class _OrderPagesState extends State<OrderPages> {
                           ),
                           TextButton(
                               onPressed: () async {
-                                var total = jumlahHarga;
+                                var total = jumlahHargaScan;
                                 var totalBeli = totalHargaBeli;
-                                var hargaLIst =
+                                var hargaList =
                                     int.parse('${barangData['quantity']}') *
                                         int.parse(barangData['hargaJual']);
                                 var hargaBeliList =
@@ -175,15 +181,16 @@ class _OrderPagesState extends State<OrderPages> {
 
                                 setState(() {
                                   listSaveOrder.removeAt(index);
-                                  jumlahHarga = 0;
-                                  jumlahHarga =
-                                      (int.parse(total.toString())) - hargaLIst;
+                                  jumlahHargaScan = 0;
+                                  jumlahHargaScan =
+                                      (int.parse(total.toString())) - hargaList;
                                   totalHargaBeli = 0;
                                   totalHargaBeli =
                                       (int.parse(totalBeli.toString())) -
                                           hargaBeliList;
 
-                                  print('hasil : ${jumlahHarga.toString()}');
+                                  print(
+                                      'hasil : ${jumlahHargaScan.toString()}');
                                 });
                               },
                               child: Text('Batal'),
@@ -235,7 +242,7 @@ class _OrderPagesState extends State<OrderPages> {
                     padding: EdgeInsets.symmetric(horizontal: 75),
                   ),
                   Text(
-                    rupiah(jumlahHarga.toString()),
+                    rupiah(jumlahHargaScan.toString()),
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -257,7 +264,7 @@ class _OrderPagesState extends State<OrderPages> {
   }
 
   Widget btnBayar(BuildContext context) {
-    if (jumlahHarga != 0) {
+    if (jumlahHargaScan != 0) {
       return Center(
         child: TextButton(
           onPressed: () async {
@@ -274,7 +281,7 @@ class _OrderPagesState extends State<OrderPages> {
               String? cartJumlahHarga = prefs.getString('newJumlahHarga');
               String? cartJumlahHargaBeli =
                   prefs.getString('newJumlahHargaBeli');
-              cartJumlahHarga = jumlahHarga.toString();
+              cartJumlahHarga = jumlahHargaScan.toString();
               cartJumlahHargaBeli = totalHargaBeli.toString();
               if (newCart == null) newCart = [];
               newCart.add(jsonEncode(savedlistOrder));
@@ -294,7 +301,7 @@ class _OrderPagesState extends State<OrderPages> {
                             child: Column(
                               children: [
                                 Text(
-                                  'Total Bayar : ' + rupiah(jumlahHarga),
+                                  'Total Bayar : ' + rupiah(jumlahHargaScan),
                                   style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
@@ -319,13 +326,14 @@ class _OrderPagesState extends State<OrderPages> {
                                   keyboardType: TextInputType.number,
                                   textInputAction: TextInputAction.done,
                                   onChanged: (value) => setState(() {
-                                    int result =
-                                        int.parse(nomBelController.text) -
-                                            (int.parse(jumlahHarga.toString()));
+                                    int result = int.parse(
+                                            nomBelController.text) -
+                                        (int.parse(jumlahHargaScan.toString()));
                                     hasilText = result.toString();
                                   }),
                                   validator: (value) {
                                     if (value.toString() == '0' ||
+                                        value.toString() == '00' ||
                                         value.toString().isEmpty) {
                                       return 'nominal bayar harus diisi dan tidak boleh 0!';
                                     }
@@ -391,6 +399,17 @@ class _OrderPagesState extends State<OrderPages> {
                                                 listSaveOrder[i]['hargaBeli']),
                                             diskonSatuan: 0,
                                           );
+
+                                          SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+                                          int? tunai = prefs.getInt('tunai');
+                                          tunai =
+                                              int.parse(nomBelController.text);
+                                          prefs.setInt('tunai', tunai);
+                                          int? kembali = prefs.getInt('tunai');
+                                          kembali = int.parse(hasilText);
+                                          prefs.setInt('kembali', kembali);
 
                                           insertOrderPenjualanDetail(
                                               penjualanDetail);

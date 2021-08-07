@@ -66,7 +66,7 @@ class SQFliteBarang {
   Future<List<Barang>> getBarang() async {
     Database db = await database;
 
-    var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis=1');
+    var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis LIKE 1');
     List<Barang> list = allData.isNotEmpty
         ? allData.map((e) => Barang.fromJson(e)).toList()
         : [];
@@ -77,7 +77,29 @@ class SQFliteBarang {
   Future<List<Barang>> getBarangFromJenis() async {
     Database db = await database;
 
-    var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis=2');
+    var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis LIKE 2');
+    List<Barang> list = allData.isNotEmpty
+        ? allData.map((e) => Barang.fromJson(e)).toList()
+        : [];
+
+    return list;
+  }
+
+  Future<List<Barang>> getBarangFromJenis3() async {
+    Database db = await database;
+
+    var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis LIKE 3');
+    List<Barang> list = allData.isNotEmpty
+        ? allData.map((e) => Barang.fromJson(e)).toList()
+        : [];
+
+    return list;
+  }
+
+  Future<List<Barang>> getBarangFromJenis4() async {
+    Database db = await database;
+
+    var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis LIKE 4');
     List<Barang> list = allData.isNotEmpty
         ? allData.map((e) => Barang.fromJson(e)).toList()
         : [];
@@ -226,7 +248,7 @@ class SQFliteBarang {
     Database db = await database;
 
     var result = await db
-        .rawQuery('SELECT * FROM BARANG WHERE KodeBarang LIKE $kodeBarang');
+        .rawQuery('SELECT * FROM BARANG WHERE KodeBarang=?', ['$kodeBarang']);
     List<Barang> list =
         result.isNotEmpty ? result.map((e) => Barang.fromJson(e)).toList() : [];
     return list;

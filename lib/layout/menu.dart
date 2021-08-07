@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'dart:ui';
 import 'package:aindo_kasir/controller/internet.dart';
@@ -8,11 +9,11 @@ import 'package:aindo_kasir/database/SQFLite.dart';
 import 'package:aindo_kasir/layout/login.dart';
 import 'package:aindo_kasir/layout/orderpages.dart';
 import 'package:aindo_kasir/main.dart';
+import 'package:aindo_kasir/models/api.dart';
 import 'package:aindo_kasir/models/barang.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modal_progress_hud_alt/modal_progress_hud_alt.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,7 +38,7 @@ class _MenuKasirState extends State<MenuKasir> {
   int itemIndexBeli = 0;
   int jumlahHarga = 0;
   int jumlahHargaBeli = 0;
-  int itemScan = 0;
+  int jumlahHargaScan = 0;
 
   bool isAsync = false;
   bool isLoading = false;
@@ -74,6 +75,8 @@ class _MenuKasirState extends State<MenuKasir> {
     Future.delayed(Duration(seconds: 2), () {
       SQFliteBarang.sql.getJenisBarang();
       SQFliteBarang.sql.getBarangFromJenis();
+      SQFliteBarang.sql.getBarangFromJenis3();
+      SQFliteBarang.sql.getBarangFromJenis4();
     });
   }
 
@@ -105,8 +108,20 @@ class _MenuKasirState extends State<MenuKasir> {
 
   List<int> jumlahHargaItem = [];
   List<int> jumlahHargaBeliItem = [];
+  List<int> jumlahHargaScanItem = [];
 
   String? harga;
+  String? message;
+
+  getStatusSync() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final psn = prefs.getString('message');
+
+    setState(() {
+      message = psn;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -114,7 +129,9 @@ class _MenuKasirState extends State<MenuKasir> {
       SQFliteBarang.sql.getBarang();
       getSQLiteBarang();
     });
+    getStatusSync();
     clearLoadOrder();
+    getImagesNet();
   }
 
   clearLoadOrder() async {
@@ -130,6 +147,15 @@ class _MenuKasirState extends State<MenuKasir> {
   var searchbarcontroller = TextEditingController();
 
   List<Barang> cartList = <Barang>[];
+
+  getImagesNet() async {
+    final ByteData imageData = await NetworkAssetBundle(
+            Uri.parse('${BaseUrl.pathImage}/default-item.jpg'))
+        .load("");
+    bytes = imageData.buffer.asUint8List();
+  }
+
+  Uint8List? bytes;
 
   @override
   Widget build(BuildContext context) {
@@ -205,12 +231,12 @@ class _MenuKasirState extends State<MenuKasir> {
                               });
 
                               Future.delayed(Duration(seconds: 3), () {
-                                load();
-                                syncPerjualan();
-                                syncPerjualanDetail();
-                                toastSyncPenjualan();
-                                isLoading = false;
+                                syncPenjualan();
+                                // syncPenjualanDetail();
+
+                                isLoading = true;
                                 Navigator.pop(context);
+                                syncAlert();
                               });
                               print("Koneksi Internet Tersedia");
                             } else {
@@ -324,7 +350,7 @@ class _MenuKasirState extends State<MenuKasir> {
                           children: [
                             TabBar(
                               labelPadding:
-                                  EdgeInsets.symmetric(horizontal: 50.0),
+                                  EdgeInsets.symmetric(horizontal: 20.0),
                               labelColor: Colors.black,
                               isScrollable: true,
                               tabs: tabs,
@@ -404,8 +430,13 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                           ListTile(
                                                                               leading: ClipRRect(
                                                                                 borderRadius: BorderRadius.circular(5.0),
-                                                                                child: Image.asset(
-                                                                                  "assets/images/${x.gambar}",
+                                                                                child: Image.network(
+                                                                                  "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                  //   Image.memory(
+                                                                                  // bytes!,
+                                                                                  // width: 100.0,
+                                                                                  // height: 60.0,
+                                                                                  // ),
                                                                                   height: 100,
                                                                                   width: 60,
                                                                                 ),
@@ -416,7 +447,7 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                 style: TextStyle(color: Colors.indigo.shade600),
                                                                               ),
                                                                               trailing: Text(
-                                                                                "Harga : " + rupiah('${x.hargaJual}'),
+                                                                                "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
                                                                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                                                               ),
                                                                               onTap: () {
@@ -427,15 +458,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                         return AlertDialog(
                                                                                           content: ListTile(
                                                                                             isThreeLine: true,
-                                                                                            leading: Image.asset(
-                                                                                              "assets/images/${x.gambar}",
+                                                                                            leading: Image.network(
+                                                                                              "${BaseUrl.pathImage}/${x.gambar}",
                                                                                             ),
                                                                                             title: Text(
                                                                                               '${x.nama}',
                                                                                               style: TextStyle(color: Colors.indigo.shade600),
                                                                                             ),
                                                                                             subtitle: Text(
-                                                                                              rupiah('${x.hargaJual}'),
+                                                                                              rupiah('${x.hargaJual}', trailing: '.00'),
                                                                                               style: TextStyle(fontWeight: FontWeight.bold),
                                                                                             ),
                                                                                           ),
@@ -564,8 +595,8 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                             leading:
                                                                                 ClipRRect(
                                                                               borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.asset(
-                                                                                "assets/images/${x.gambar}",
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
                                                                                 height: 100,
                                                                                 width: 60,
                                                                               ),
@@ -578,7 +609,7 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                             ),
                                                                             trailing:
                                                                                 Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}'),
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
                                                                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                                                             ),
                                                                             onTap:
@@ -590,15 +621,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                       return AlertDialog(
                                                                                         content: ListTile(
                                                                                           isThreeLine: true,
-                                                                                          leading: Image.asset(
-                                                                                            "assets/images/${x.gambar}",
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
                                                                                           ),
                                                                                           title: Text(
                                                                                             '${x.nama}',
                                                                                             style: TextStyle(color: Colors.indigo.shade600),
                                                                                           ),
                                                                                           subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}'),
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
                                                                                             style: TextStyle(fontWeight: FontWeight.bold),
                                                                                           ),
                                                                                         ),
@@ -764,21 +795,22 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                             leading:
                                                                                 ClipRRect(
                                                                               borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.asset(
-                                                                                "assets/images/${x.gambar}",
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
                                                                                 height: 100,
                                                                                 width: 60,
                                                                               ),
                                                                             ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
+                                                                            title: Text(
+                                                                                // "",
+                                                                                '${x.nama}',
+                                                                                style: TextStyle(
+                                                                                  color: Colors.indigo.shade600,
+                                                                                  fontSize: 14,
+                                                                                )),
                                                                             trailing:
                                                                                 Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}'),
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
                                                                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                                                             ),
                                                                             onTap:
@@ -790,15 +822,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                       return AlertDialog(
                                                                                         content: ListTile(
                                                                                           isThreeLine: true,
-                                                                                          leading: Image.asset(
-                                                                                            "assets/images/${x.gambar}",
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
                                                                                           ),
                                                                                           title: Text(
                                                                                             '${x.nama}',
                                                                                             style: TextStyle(color: Colors.indigo.shade600),
                                                                                           ),
                                                                                           subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}'),
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
                                                                                             style: TextStyle(fontWeight: FontWeight.bold),
                                                                                           ),
                                                                                         ),
@@ -824,17 +856,17 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                                                   Padding(
                                                                                                                     padding: EdgeInsets.only(right: 5),
                                                                                                                   ),
-                                                                                                                  _itemCount[index] != 0
+                                                                                                                  _itemCount[_itemCount.length - 1] != 0
                                                                                                                       ? new IconButton(
                                                                                                                           icon: Icon(Icons.remove),
                                                                                                                           onPressed: () {
                                                                                                                             setState(() {
-                                                                                                                              _itemCount[index]--;
-                                                                                                                              _itemCountBeli[index]--;
+                                                                                                                              _itemCount[_itemCount.length - 1]--;
+                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
 
                                                                                                                               itemIndex--;
-                                                                                                                              jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                              jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
+                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
                                                                                                                             });
                                                                                                                           })
                                                                                                                       : IconButton(
@@ -842,19 +874,19 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                                                           onPressed: null,
                                                                                                                         ),
                                                                                                                   new Text(
-                                                                                                                    _itemCount[index].toString(),
+                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
                                                                                                                     style: TextStyle(fontWeight: FontWeight.bold),
                                                                                                                   ),
                                                                                                                   new IconButton(
                                                                                                                       icon: Icon(Icons.add),
                                                                                                                       onPressed: () async {
                                                                                                                         setState(() {
-                                                                                                                          _itemCount[index]++;
-                                                                                                                          _itemCountBeli[index]++;
+                                                                                                                          _itemCount[_itemCount.length - 1]++;
+                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
 
                                                                                                                           itemIndex++;
-                                                                                                                          jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                          jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
+                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
                                                                                                                         });
                                                                                                                       }),
                                                                                                                 ],
@@ -871,7 +903,7 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                               ButtonBar(
                                                                                                 alignment: MainAxisAlignment.center,
                                                                                                 children: [
-                                                                                                  btnTambah(context, snapshot.data[index], index),
+                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
                                                                                                 ],
                                                                                               ),
                                                                                             ],
@@ -926,8 +958,8 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                             leading:
                                                                                 ClipRRect(
                                                                               borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.asset(
-                                                                                "assets/images/${x.gambar}",
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
                                                                                 height: 100,
                                                                                 width: 60,
                                                                               ),
@@ -940,7 +972,7 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                             ),
                                                                             trailing:
                                                                                 Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}'),
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
                                                                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                                                             ),
                                                                             onTap:
@@ -952,15 +984,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                       return AlertDialog(
                                                                                         content: ListTile(
                                                                                           isThreeLine: true,
-                                                                                          leading: Image.asset(
-                                                                                            "assets/images/${x.gambar}",
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
                                                                                           ),
                                                                                           title: Text(
                                                                                             '${x.nama}',
                                                                                             style: TextStyle(color: Colors.indigo.shade600),
                                                                                           ),
                                                                                           subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}'),
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
                                                                                             style: TextStyle(fontWeight: FontWeight.bold),
                                                                                           ),
                                                                                         ),
@@ -986,16 +1018,16 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                                                   Padding(
                                                                                                                     padding: EdgeInsets.only(right: 5),
                                                                                                                   ),
-                                                                                                                  _itemCount[index] != 0
+                                                                                                                  _itemCount[_itemCount.length - 1] != 0
                                                                                                                       ? new IconButton(
                                                                                                                           icon: Icon(Icons.remove),
                                                                                                                           onPressed: () async {
                                                                                                                             setState(() {
-                                                                                                                              _itemCount[index]--;
-                                                                                                                              _itemCountBeli[index]--;
+                                                                                                                              _itemCount[_itemCount.length - 1]--;
+                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
                                                                                                                               itemIndex--;
-                                                                                                                              jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                              jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
+                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
                                                                                                                             });
                                                                                                                           })
                                                                                                                       : IconButton(
@@ -1003,18 +1035,18 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                                                           onPressed: null,
                                                                                                                         ),
                                                                                                                   new Text(
-                                                                                                                    _itemCount[index].toString(),
+                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
                                                                                                                     style: TextStyle(fontWeight: FontWeight.bold),
                                                                                                                   ),
                                                                                                                   new IconButton(
                                                                                                                       icon: Icon(Icons.add),
                                                                                                                       onPressed: () async {
                                                                                                                         setState(() {
-                                                                                                                          _itemCount[index]++;
-                                                                                                                          _itemCountBeli[index]++;
+                                                                                                                          _itemCount[_itemCount.length - 1]++;
+                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
                                                                                                                           itemIndex++;
-                                                                                                                          jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                          jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
+                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
                                                                                                                         });
                                                                                                                       }),
                                                                                                                 ],
@@ -1031,7 +1063,729 @@ class _MenuKasirState extends State<MenuKasir> {
                                                                                               ButtonBar(
                                                                                                 alignment: MainAxisAlignment.center,
                                                                                                 children: [
-                                                                                                  btnTambah(context, snapshot.data[index], index),
+                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
+                                                                                                ],
+                                                                                              ),
+                                                                                            ],
+                                                                                          )
+                                                                                        ],
+                                                                                      );
+                                                                                    });
+                                                                                  });
+                                                                            },
+                                                                          ),
+                                                                          Padding(
+                                                                              padding: EdgeInsets.only(top: 10)),
+                                                                          Divider(
+                                                                            thickness:
+                                                                                2,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  } else {
+                                                                    return Container();
+                                                                  }
+                                                                },
+                                                              )
+                                                            : Center(
+                                                                child:
+                                                                    CircularProgressIndicator());
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Stack(
+                                          alignment: Alignment.bottomCenter,
+                                          children: [
+                                            Container(
+                                              child: Stack(
+                                                children: [
+                                                  Padding(
+                                                    padding: EdgeInsets.all(10),
+                                                    child: FutureBuilder(
+                                                      future: SQFliteBarang.sql
+                                                          .getBarangFromJenis3(),
+                                                      builder:
+                                                          (BuildContext context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                        return snapshot.hasData
+                                                            ? ListView.builder(
+                                                                itemCount:
+                                                                    snapshot
+                                                                        .data
+                                                                        .length,
+                                                                itemBuilder:
+                                                                    (BuildContext
+                                                                            context,
+                                                                        index) {
+                                                                  final x = snapshot
+                                                                          .data[
+                                                                      index];
+                                                                  if (searchText
+                                                                      .isEmpty) {
+                                                                    for (int i =
+                                                                            0;
+                                                                        i < snapshot.data.length;
+                                                                        i++) {
+                                                                      _itemCount
+                                                                          .add(
+                                                                              0);
+                                                                      jumlahHargaItem
+                                                                          .add(
+                                                                              0);
+                                                                      for (int i =
+                                                                              0;
+                                                                          i < snapshot.data.length;
+                                                                          i++) {
+                                                                        _itemCountBeli
+                                                                            .add(0);
+                                                                        jumlahHargaBeliItem
+                                                                            .add(0);
+                                                                      }
+                                                                    }
+                                                                    return SingleChildScrollView(
+                                                                      child:
+                                                                          Column(
+                                                                        children: [
+                                                                          ListTile(
+                                                                            leading:
+                                                                                ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(5.0),
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                height: 100,
+                                                                                width: 60,
+                                                                              ),
+                                                                            ),
+                                                                            title:
+                                                                                Text(
+                                                                              // "",
+                                                                              '${x.nama}',
+                                                                              style: TextStyle(color: Colors.indigo.shade600),
+                                                                            ),
+                                                                            trailing:
+                                                                                Text(
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                                                            ),
+                                                                            onTap:
+                                                                                () {
+                                                                              showDialog(
+                                                                                  context: context,
+                                                                                  builder: (BuildContext context) {
+                                                                                    return StatefulBuilder(builder: (context, setState) {
+                                                                                      return AlertDialog(
+                                                                                        content: ListTile(
+                                                                                          isThreeLine: true,
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                          ),
+                                                                                          title: Text(
+                                                                                            '${x.nama}',
+                                                                                            style: TextStyle(color: Colors.indigo.shade600),
+                                                                                          ),
+                                                                                          subtitle: Text(
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                          ),
+                                                                                        ),
+                                                                                        actions: [
+                                                                                          Column(
+                                                                                            children: [
+                                                                                              Container(
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                  children: [
+                                                                                                    Card(
+                                                                                                      child: Container(
+                                                                                                        height: 50,
+                                                                                                        width: 120,
+                                                                                                        child: Row(
+                                                                                                          children: [
+                                                                                                            Container(
+                                                                                                              alignment: Alignment.center,
+                                                                                                              child: Row(
+                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                children: [
+                                                                                                                  Padding(
+                                                                                                                    padding: EdgeInsets.only(right: 5),
+                                                                                                                  ),
+                                                                                                                  _itemCount[_itemCount.length - 1] != 0
+                                                                                                                      ? new IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: () {
+                                                                                                                            setState(() {
+                                                                                                                              _itemCount[_itemCount.length - 1]--;
+                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
+
+                                                                                                                              itemIndex--;
+                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                            });
+                                                                                                                          })
+                                                                                                                      : IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: null,
+                                                                                                                        ),
+                                                                                                                  new Text(
+                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
+                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                                                  ),
+                                                                                                                  new IconButton(
+                                                                                                                      icon: Icon(Icons.add),
+                                                                                                                      onPressed: () async {
+                                                                                                                        setState(() {
+                                                                                                                          _itemCount[_itemCount.length - 1]++;
+                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
+
+                                                                                                                          itemIndex++;
+                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                        });
+                                                                                                                      }),
+                                                                                                                ],
+                                                                                                              ),
+                                                                                                            )
+                                                                                                          ],
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
+                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
+                                                                                              ButtonBar(
+                                                                                                alignment: MainAxisAlignment.center,
+                                                                                                children: [
+                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
+                                                                                                ],
+                                                                                              ),
+                                                                                            ],
+                                                                                          ),
+                                                                                        ],
+                                                                                      );
+                                                                                    });
+                                                                                  });
+                                                                            },
+                                                                          ),
+                                                                          Padding(
+                                                                              padding: EdgeInsets.only(top: 10)),
+                                                                          Divider(
+                                                                            thickness:
+                                                                                2,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  } else if (x
+                                                                      .nama
+                                                                      .toString()
+                                                                      .toLowerCase()
+                                                                      .contains(
+                                                                          searchText
+                                                                              .toLowerCase())) {
+                                                                    for (int i =
+                                                                            0;
+                                                                        i < snapshot.data.length;
+                                                                        i++) {
+                                                                      _itemCount
+                                                                          .add(
+                                                                              0);
+                                                                      jumlahHargaItem
+                                                                          .add(
+                                                                              0);
+                                                                      for (int i =
+                                                                              0;
+                                                                          i < snapshot.data.length;
+                                                                          i++) {
+                                                                        _itemCountBeli
+                                                                            .add(0);
+                                                                        jumlahHargaBeliItem
+                                                                            .add(0);
+                                                                      }
+                                                                    }
+                                                                    return SingleChildScrollView(
+                                                                      child:
+                                                                          Column(
+                                                                        children: [
+                                                                          ListTile(
+                                                                            leading:
+                                                                                ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(5.0),
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                height: 100,
+                                                                                width: 60,
+                                                                              ),
+                                                                            ),
+                                                                            title:
+                                                                                Text(
+                                                                              // "",
+                                                                              '${x.nama}',
+                                                                              style: TextStyle(color: Colors.indigo.shade600),
+                                                                            ),
+                                                                            trailing:
+                                                                                Text(
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                                                            ),
+                                                                            onTap:
+                                                                                () {
+                                                                              showDialog(
+                                                                                  context: context,
+                                                                                  builder: (BuildContext context) {
+                                                                                    return StatefulBuilder(builder: (context, setState) {
+                                                                                      return AlertDialog(
+                                                                                        content: ListTile(
+                                                                                          isThreeLine: true,
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                          ),
+                                                                                          title: Text(
+                                                                                            '${x.nama}',
+                                                                                            style: TextStyle(color: Colors.indigo.shade600),
+                                                                                          ),
+                                                                                          subtitle: Text(
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                          ),
+                                                                                        ),
+                                                                                        actions: [
+                                                                                          Column(
+                                                                                            children: [
+                                                                                              Container(
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                  children: [
+                                                                                                    Card(
+                                                                                                      child: Container(
+                                                                                                        height: 50,
+                                                                                                        width: 120,
+                                                                                                        child: Row(
+                                                                                                          children: [
+                                                                                                            Container(
+                                                                                                              alignment: Alignment.center,
+                                                                                                              child: Row(
+                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                children: [
+                                                                                                                  Padding(
+                                                                                                                    padding: EdgeInsets.only(right: 5),
+                                                                                                                  ),
+                                                                                                                  _itemCount[_itemCount.length - 1] != 0
+                                                                                                                      ? new IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: () async {
+                                                                                                                            setState(() {
+                                                                                                                              _itemCount[_itemCount.length - 1]--;
+                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
+                                                                                                                              itemIndex--;
+                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                            });
+                                                                                                                          })
+                                                                                                                      : IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: null,
+                                                                                                                        ),
+                                                                                                                  new Text(
+                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
+                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                                                  ),
+                                                                                                                  new IconButton(
+                                                                                                                      icon: Icon(Icons.add),
+                                                                                                                      onPressed: () async {
+                                                                                                                        setState(() {
+                                                                                                                          _itemCount[_itemCount.length - 1]++;
+                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
+                                                                                                                          itemIndex++;
+                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                        });
+                                                                                                                      }),
+                                                                                                                ],
+                                                                                                              ),
+                                                                                                            )
+                                                                                                          ],
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
+                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
+                                                                                              ButtonBar(
+                                                                                                alignment: MainAxisAlignment.center,
+                                                                                                children: [
+                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
+                                                                                                ],
+                                                                                              ),
+                                                                                            ],
+                                                                                          )
+                                                                                        ],
+                                                                                      );
+                                                                                    });
+                                                                                  });
+                                                                            },
+                                                                          ),
+                                                                          Padding(
+                                                                              padding: EdgeInsets.only(top: 10)),
+                                                                          Divider(
+                                                                            thickness:
+                                                                                2,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  } else {
+                                                                    return Container();
+                                                                  }
+                                                                },
+                                                              )
+                                                            : Center(
+                                                                child:
+                                                                    CircularProgressIndicator());
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Stack(
+                                          alignment: Alignment.bottomCenter,
+                                          children: [
+                                            Container(
+                                              child: Stack(
+                                                children: [
+                                                  Padding(
+                                                    padding: EdgeInsets.all(10),
+                                                    child: FutureBuilder(
+                                                      future: SQFliteBarang.sql
+                                                          .getBarangFromJenis4(),
+                                                      builder:
+                                                          (BuildContext context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                        return snapshot.hasData
+                                                            ? ListView.builder(
+                                                                itemCount:
+                                                                    snapshot
+                                                                        .data
+                                                                        .length,
+                                                                itemBuilder:
+                                                                    (BuildContext
+                                                                            context,
+                                                                        index) {
+                                                                  final x = snapshot
+                                                                          .data[
+                                                                      index];
+                                                                  if (searchText
+                                                                      .isEmpty) {
+                                                                    for (int i =
+                                                                            0;
+                                                                        i < snapshot.data.length;
+                                                                        i++) {
+                                                                      _itemCount
+                                                                          .add(
+                                                                              0);
+                                                                      jumlahHargaItem
+                                                                          .add(
+                                                                              0);
+                                                                      for (int i =
+                                                                              0;
+                                                                          i < snapshot.data.length;
+                                                                          i++) {
+                                                                        _itemCountBeli
+                                                                            .add(0);
+                                                                        jumlahHargaBeliItem
+                                                                            .add(0);
+                                                                      }
+                                                                    }
+                                                                    return SingleChildScrollView(
+                                                                      child:
+                                                                          Column(
+                                                                        children: [
+                                                                          ListTile(
+                                                                            leading:
+                                                                                ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(5.0),
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                height: 100,
+                                                                                width: 60,
+                                                                              ),
+                                                                            ),
+                                                                            title:
+                                                                                Text(
+                                                                              // "",
+                                                                              '${x.nama}',
+                                                                              style: TextStyle(color: Colors.indigo.shade600),
+                                                                            ),
+                                                                            trailing:
+                                                                                Text(
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                                                            ),
+                                                                            onTap:
+                                                                                () {
+                                                                              showDialog(
+                                                                                  context: context,
+                                                                                  builder: (BuildContext context) {
+                                                                                    return StatefulBuilder(builder: (context, setState) {
+                                                                                      return AlertDialog(
+                                                                                        content: ListTile(
+                                                                                          isThreeLine: true,
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                          ),
+                                                                                          title: Text(
+                                                                                            '${x.nama}',
+                                                                                            style: TextStyle(color: Colors.indigo.shade600),
+                                                                                          ),
+                                                                                          subtitle: Text(
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                          ),
+                                                                                        ),
+                                                                                        actions: [
+                                                                                          Column(
+                                                                                            children: [
+                                                                                              Container(
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                  children: [
+                                                                                                    Card(
+                                                                                                      child: Container(
+                                                                                                        height: 50,
+                                                                                                        width: 120,
+                                                                                                        child: Row(
+                                                                                                          children: [
+                                                                                                            Container(
+                                                                                                              alignment: Alignment.center,
+                                                                                                              child: Row(
+                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                children: [
+                                                                                                                  Padding(
+                                                                                                                    padding: EdgeInsets.only(right: 5),
+                                                                                                                  ),
+                                                                                                                  _itemCount[_itemCount.length - 1] != 0
+                                                                                                                      ? new IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: () {
+                                                                                                                            setState(() {
+                                                                                                                              _itemCount[_itemCount.length - 1]--;
+                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
+
+                                                                                                                              itemIndex--;
+                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                            });
+                                                                                                                          })
+                                                                                                                      : IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: null,
+                                                                                                                        ),
+                                                                                                                  new Text(
+                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
+                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                                                  ),
+                                                                                                                  new IconButton(
+                                                                                                                      icon: Icon(Icons.add),
+                                                                                                                      onPressed: () async {
+                                                                                                                        setState(() {
+                                                                                                                          _itemCount[_itemCount.length - 1]++;
+                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
+
+                                                                                                                          itemIndex++;
+                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                        });
+                                                                                                                      }),
+                                                                                                                ],
+                                                                                                              ),
+                                                                                                            )
+                                                                                                          ],
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
+                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
+                                                                                              ButtonBar(
+                                                                                                alignment: MainAxisAlignment.center,
+                                                                                                children: [
+                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
+                                                                                                ],
+                                                                                              ),
+                                                                                            ],
+                                                                                          ),
+                                                                                        ],
+                                                                                      );
+                                                                                    });
+                                                                                  });
+                                                                            },
+                                                                          ),
+                                                                          Padding(
+                                                                              padding: EdgeInsets.only(top: 10)),
+                                                                          Divider(
+                                                                            thickness:
+                                                                                2,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  } else if (x
+                                                                      .nama
+                                                                      .toString()
+                                                                      .toLowerCase()
+                                                                      .contains(
+                                                                          searchText
+                                                                              .toLowerCase())) {
+                                                                    for (int i =
+                                                                            0;
+                                                                        i < snapshot.data.length;
+                                                                        i++) {
+                                                                      _itemCount
+                                                                          .add(
+                                                                              0);
+                                                                      jumlahHargaItem
+                                                                          .add(
+                                                                              0);
+                                                                      for (int i =
+                                                                              0;
+                                                                          i < snapshot.data.length;
+                                                                          i++) {
+                                                                        _itemCountBeli
+                                                                            .add(0);
+                                                                        jumlahHargaBeliItem
+                                                                            .add(0);
+                                                                      }
+                                                                    }
+                                                                    return SingleChildScrollView(
+                                                                      child:
+                                                                          Column(
+                                                                        children: [
+                                                                          ListTile(
+                                                                            leading:
+                                                                                ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(5.0),
+                                                                              child: Image.network(
+                                                                                "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                height: 100,
+                                                                                width: 60,
+                                                                              ),
+                                                                            ),
+                                                                            title:
+                                                                                Text(
+                                                                              // "",
+                                                                              '${x.nama}',
+                                                                              style: TextStyle(color: Colors.indigo.shade600),
+                                                                            ),
+                                                                            trailing:
+                                                                                Text(
+                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                                                            ),
+                                                                            onTap:
+                                                                                () {
+                                                                              showDialog(
+                                                                                  context: context,
+                                                                                  builder: (BuildContext context) {
+                                                                                    return StatefulBuilder(builder: (context, setState) {
+                                                                                      return AlertDialog(
+                                                                                        content: ListTile(
+                                                                                          isThreeLine: true,
+                                                                                          leading: Image.network(
+                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
+                                                                                          ),
+                                                                                          title: Text(
+                                                                                            '${x.nama}',
+                                                                                            style: TextStyle(color: Colors.indigo.shade600),
+                                                                                          ),
+                                                                                          subtitle: Text(
+                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
+                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                          ),
+                                                                                        ),
+                                                                                        actions: [
+                                                                                          Column(
+                                                                                            children: [
+                                                                                              Container(
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                  children: [
+                                                                                                    Card(
+                                                                                                      child: Container(
+                                                                                                        height: 50,
+                                                                                                        width: 120,
+                                                                                                        child: Row(
+                                                                                                          children: [
+                                                                                                            Container(
+                                                                                                              alignment: Alignment.center,
+                                                                                                              child: Row(
+                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                                                children: [
+                                                                                                                  Padding(
+                                                                                                                    padding: EdgeInsets.only(right: 5),
+                                                                                                                  ),
+                                                                                                                  _itemCount[_itemCount.length - 1] != 0
+                                                                                                                      ? new IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: () async {
+                                                                                                                            setState(() {
+                                                                                                                              _itemCount[_itemCount.length - 1]--;
+                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
+                                                                                                                              itemIndex--;
+                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                            });
+                                                                                                                          })
+                                                                                                                      : IconButton(
+                                                                                                                          icon: Icon(Icons.remove),
+                                                                                                                          onPressed: null,
+                                                                                                                        ),
+                                                                                                                  new Text(
+                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
+                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                                                  ),
+                                                                                                                  new IconButton(
+                                                                                                                      icon: Icon(Icons.add),
+                                                                                                                      onPressed: () async {
+                                                                                                                        setState(() {
+                                                                                                                          _itemCount[_itemCount.length - 1]++;
+                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
+                                                                                                                          itemIndex++;
+                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
+                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
+                                                                                                                        });
+                                                                                                                      }),
+                                                                                                                ],
+                                                                                                              ),
+                                                                                                            )
+                                                                                                          ],
+                                                                                                        ),
+                                                                                                      ),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
+                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
+                                                                                              ButtonBar(
+                                                                                                alignment: MainAxisAlignment.center,
+                                                                                                children: [
+                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
                                                                                                 ],
                                                                                               ),
                                                                                             ],
@@ -1104,18 +1858,18 @@ class _MenuKasirState extends State<MenuKasir> {
       return Container();
     } else {
       return FloatingActionButton.extended(
-        onPressed: () {
+        onPressed: () async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setInt('jumlahHargaScan', jumlahHarga);
+
           Navigator.push(
               context,
               PageTransition(
-                  type: PageTransitionType.fade,
-                  child: OrderPages(
-                      // barangData: ,
-                      // item: itemIndex,
-                      )));
+                  type: PageTransitionType.fade, child: OrderPages()));
         },
-        label: Text(
-            "View Order  " + "(${itemIndex.toString()})" + "  Rp$jumlahHarga"),
+        label: Text("View Order  " +
+            "(${itemIndex.toString()})" +
+            "  ${rupiah(jumlahHarga)}"),
         backgroundColor: Colors.indigo.shade900,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -1175,6 +1929,7 @@ class _MenuKasirState extends State<MenuKasir> {
     return false;
   }
 
+  int? barcodeBarang;
   String? scanBarcode;
   final scanBarcodeController = TextEditingController();
   String? barcodeScanRes;
@@ -1185,9 +1940,8 @@ class _MenuKasirState extends State<MenuKasir> {
     scanBarcode = await FlutterBarcodeScanner.scanBarcode(
         '#ff6666', 'Batal', true, ScanMode.BARCODE);
 
-    print(scanBarcode);
+    print(' print : $scanBarcode');
 
-    // scanBarcode = barcodeScanRes!;
     setState(() {
       SQFliteBarang.sql.getBarangScan(scanBarcode!).then((value) {
         value.forEach((data) {
@@ -1204,39 +1958,37 @@ class _MenuKasirState extends State<MenuKasir> {
           ));
         });
       }).catchError((error) {
-        print(error);
+        print('message : $error');
       });
     });
 
-    // setState(() {
-    //   scanBarcode = '';
-    // });
-
-    Future.delayed(Duration(seconds: 1), () {
-      scanAlertDialog();
-    });
-  }
-
-  toastResultScanConnected() {
-    Fluttertoast.showToast(
-        msg: '$scanBarcode',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.blueAccent,
-        fontSize: 12.0);
-  }
-
-  scanAlertDialog() {
     for (int i = 0; i < listBarang.length; i++) {
       _itemCount.add(0);
       jumlahHargaItem.add(0);
-      for (int i = 0; i < listBarang.length; i++) {
-        _itemCountBeli.add(0);
-        jumlahHargaBeliItem.add(0);
-      }
     }
-    scanBarcode != '-1' && scanBarcode != null
+
+    listBarang.clear();
+    _itemCount.clear();
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      getBarangByBarcode();
+    });
+  }
+
+  getBarangByBarcode() {
+    SQFliteBarang.sql.getBarangScan(scanBarcode!).then((value) {
+      barcodeBarang = value.length;
+      scanAlertDialog();
+      print(value.length);
+    });
+  }
+
+  scanAlertDialog() {
+    _itemCount.add(0);
+    jumlahHargaItem.add(0);
+    _itemCountBeli.add(0);
+    jumlahHargaBeliItem.add(0);
+    scanBarcode != '-1' && barcodeBarang != 0 && scanBarcode != null
         ? showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -1244,15 +1996,15 @@ class _MenuKasirState extends State<MenuKasir> {
                 return AlertDialog(
                   content: ListTile(
                     isThreeLine: true,
-                    leading: Image.asset(
-                      "assets/images/${listBarang.first.gambar}",
+                    leading: Image.network(
+                      "${BaseUrl.pathImage}/${listBarang.first.gambar}",
                     ),
                     title: Text(
                       '${listBarang.first.nama}',
                       style: TextStyle(color: Colors.indigo.shade600),
                     ),
                     subtitle: Text(
-                      rupiah('${listBarang.first.hargaJual}'),
+                      rupiah('${listBarang.first.hargaJual}', trailing: '.00'),
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -1281,32 +2033,43 @@ class _MenuKasirState extends State<MenuKasir> {
                                               padding:
                                                   EdgeInsets.only(right: 5),
                                             ),
-                                            _itemCount[itemScan] != 0
+                                            _itemCount[_itemCount.length - 1] !=
+                                                    0
                                                 ? new IconButton(
                                                     icon: Icon(Icons.remove),
                                                     onPressed: () async {
                                                       setState(() {
-                                                        _itemCount[itemScan]--;
+                                                        _itemCount[
+                                                            _itemCount.length -
+                                                                1]--;
                                                         _itemCountBeli[
-                                                            itemScan]--;
+                                                            _itemCount.length -
+                                                                1]--;
+
                                                         itemIndex--;
-                                                        jumlahHargaItem[
-                                                                itemScan] =
-                                                            int.parse(listBarang
-                                                                    .first
+                                                        jumlahHargaItem[_itemCount
+                                                                .length -
+                                                            1] = int.parse(
+                                                                listBarang.first
                                                                     .hargaJual) *
-                                                                _itemCount[
-                                                                    itemScan];
+                                                            _itemCount[_itemCount
+                                                                    .length -
+                                                                1];
                                                         jumlahHargaBeliItem[
-                                                                itemScan] =
+                                                                _itemCount
+                                                                        .length -
+                                                                    1] =
                                                             int.parse(listBarang
                                                                     .first
                                                                     .hargaBeli) *
                                                                 _itemCountBeli[
-                                                                    itemScan];
+                                                                    _itemCount
+                                                                            .length -
+                                                                        1];
 
                                                         print(jumlahHargaItem[
-                                                            itemIndex]);
+                                                            _itemCount.length -
+                                                                1]);
                                                       });
                                                     })
                                                 : IconButton(
@@ -1314,7 +2077,8 @@ class _MenuKasirState extends State<MenuKasir> {
                                                     onPressed: null,
                                                   ),
                                             new Text(
-                                              _itemCount[itemScan].toString(),
+                                              _itemCount[_itemCount.length - 1]
+                                                  .toString(),
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold),
                                             ),
@@ -1322,24 +2086,42 @@ class _MenuKasirState extends State<MenuKasir> {
                                                 icon: Icon(Icons.add),
                                                 onPressed: () async {
                                                   setState(() {
-                                                    _itemCount[itemScan]++;
-                                                    _itemCountBeli[itemScan]++;
+                                                    _itemCount[
+                                                        _itemCount.length -
+                                                            1]++;
+                                                    _itemCountBeli[
+                                                        _itemCountBeli.length -
+                                                            1]++;
+
                                                     itemIndex++;
-                                                    jumlahHargaItem[itemScan] =
+                                                    jumlahHargaItem[
+                                                            jumlahHargaItem
+                                                                    .length -
+                                                                1] =
                                                         int.parse(listBarang
                                                                 .first
                                                                 .hargaJual) *
-                                                            _itemCount[
-                                                                itemScan];
+                                                            _itemCount[_itemCount
+                                                                    .length -
+                                                                1];
                                                     jumlahHargaBeliItem[
-                                                        itemScan] = int.parse(
-                                                            listBarang.first
+                                                            jumlahHargaItem
+                                                                    .length -
+                                                                1] =
+                                                        int.parse(listBarang
+                                                                .first
                                                                 .hargaBeli) *
-                                                        _itemCountBeli[
-                                                            itemScan];
+                                                            _itemCountBeli[
+                                                                _itemCountBeli
+                                                                        .length -
+                                                                    1];
 
-                                                    print(jumlahHargaItem[
-                                                        itemScan]);
+                                                    print('jumlahHarga' +
+                                                        jumlahHargaItem[
+                                                                jumlahHargaItem
+                                                                        .length -
+                                                                    1]
+                                                            .toString());
                                                   });
                                                 }),
                                           ],
@@ -1356,7 +2138,8 @@ class _MenuKasirState extends State<MenuKasir> {
                         ButtonBar(
                           alignment: MainAxisAlignment.center,
                           children: [
-                            btnScanTambah(context, listBarang.first, itemScan),
+                            btnScanTambah(context, listBarang.first,
+                                _itemCount.length - 1),
                           ],
                         )
                       ],
@@ -1417,7 +2200,6 @@ class _MenuKasirState extends State<MenuKasir> {
                 cart.add(jsonEncode(savedlistOrder));
                 cartJumlahHarga = jumlahHarga.toInt();
                 cartJumlahHargaBeli = jumlahHargaBeli.toInt();
-                // cartJumlahHarga = jsonEncode(object)
                 prefs.setStringList('cart', cart);
                 prefs.setInt('jumlahHarga', cartJumlahHarga);
                 prefs.setInt('jumlahHargaBeli', cartJumlahHargaBeli);
@@ -1430,7 +2212,7 @@ class _MenuKasirState extends State<MenuKasir> {
   }
 
   Widget btnScanTambah(BuildContext context, brng, int itemScan) {
-    if (_itemCount[itemScan] != 0) {
+    if (_itemCount[_itemCount.length - 1] != 0) {
       return Center(
         child: TextButton(
             onPressed: () async {
@@ -1442,13 +2224,19 @@ class _MenuKasirState extends State<MenuKasir> {
               for (int i = 0; i < jumlahHargaBeliItem.length; i++) {
                 jumlahHargaBeli = jumlahHargaBeli + jumlahHargaBeliItem[i];
               }
-              viewOrder(listBarang.first);
+              jumlahHargaScan = 0;
+              for (int i = 0; i < jumlahHargaScanItem.length; i++) {
+                jumlahHargaScan = jumlahHargaScan + jumlahHargaScanItem[i];
+              }
+
+              viewOrder(brng);
               savedlistOrder['idBarang'] = brng.iDBarang;
               savedlistOrder['Gambar'] = brng.gambar;
               savedlistOrder['Nama'] = brng.nama;
               savedlistOrder['hargaJual'] = brng.hargaJual;
               savedlistOrder['hargaBeli'] = brng.hargaBeli;
-              savedlistOrder['quantity'] = _itemCount[itemScan].toString();
+              savedlistOrder['quantity'] =
+                  _itemCount[_itemCount.length - 1].toString();
 
               SharedPreferences prefs = await SharedPreferences.getInstance();
               List<String>? cart = prefs.getStringList('cart');
@@ -1458,17 +2246,9 @@ class _MenuKasirState extends State<MenuKasir> {
               cart.add(jsonEncode(savedlistOrder));
               cartJumlahHarga = jumlahHarga.toInt();
               cartJumlahHargaBeli = jumlahHargaBeli.toInt();
-              // cartJumlahHarga = jsonEncode(object)
               prefs.setStringList('cart', cart);
               prefs.setInt('jumlahHarga', cartJumlahHarga);
               prefs.setInt('jumlahHargaBeli', cartJumlahHargaBeli);
-              // scanBarcode = '';
-              scanBarcodeController.text = '';
-              scanBarcode = '';
-              listBarang.clear();
-              // _itemCount.clear();
-              print('cek:  ${_itemCount.length}');
-              // jumlahHargaItem.clear();
 
               Navigator.pop(context);
             },
@@ -1496,13 +2276,10 @@ class _MenuKasirState extends State<MenuKasir> {
     setState(() {});
   }
 
-  Future syncPerjualan() async {
+  Future syncPenjualan() async {
     await SyncToAPI().fetchAllPenjualan().then((penjualanList) async {
       await SyncToAPI().syncPenjualanToAPI(penjualanList);
     });
-  }
-
-  Future syncPerjualanDetail() async {
     await SyncToAPI()
         .fetchAllPenjualanDetail()
         .then((penjualanDetailList) async {
@@ -1510,12 +2287,56 @@ class _MenuKasirState extends State<MenuKasir> {
     });
   }
 
-  toastSyncPenjualan() {
-    Fluttertoast.showToast(
-        msg: 'Data Sukses Tersinkron',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        fontSize: 12.0);
+  // Future syncPenjualanDetail() async {
+  //   await SyncToAPI()
+  //       .fetchAllPenjualanDetail()
+  //       .then((penjualanDetailList) async {
+  //     await SyncToAPI().syncPenjualanDetailToAPI(penjualanDetailList);
+  //   });
+  // }
+
+  // toastSyncPenjualan() {
+  //   Fluttertoast.showToast(
+  //       msg: '$message',
+  //       toastLength: Toast.LENGTH_SHORT,
+  //       gravity: ToastGravity.CENTER,
+  //       timeInSecForIosWeb: 1,
+  //       fontSize: 12.0);
+  // }
+
+  syncAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 50,
+              ),
+              content: Text(
+                "Status Sinkron : $message",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+              actions: [
+                Center(
+                  child: TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('OK'),
+                      style: ButtonStyle(
+                          shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20))),
+                          foregroundColor:
+                              MaterialStateProperty.all(Colors.white),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.grey),
+                          fixedSize: MaterialStateProperty.all(Size(100, 30)))),
+                ),
+              ]);
+        });
   }
 }

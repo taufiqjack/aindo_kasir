@@ -32,8 +32,8 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
 
   getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final cart = prefs.getStringList('cart')!;
-    final cartJumlahHarga = prefs.getString('jumlahHarga');
+    final cart = prefs.getStringList('newCart')!;
+    final cartJumlahHarga = prefs.getString('newJumlahHarga');
     setState(() {
       cart.forEach((item) {
         listSaveOrder.add(jsonDecode(item));
@@ -221,7 +221,6 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       print("Print $result");
     } else {
-      //Hadnle Not Connected Senario
     }
   }
 

@@ -14,7 +14,6 @@ import 'package:take_screenshot/take_screenshot.dart';
 import 'dart:ui' as ui;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:aindo_kasir/controller/global.dart' as global;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PaymentDetails extends StatefulWidget {
@@ -33,11 +32,15 @@ class _PaymentDetailsState extends State<PaymentDetails> {
 
   List<Map<dynamic, dynamic>> listSaveOrder = [];
   String? jumlahHarga;
+  String? tunai;
+  String? kembali;
 
   getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final cart = prefs.getStringList('newCart')!;
     final cartJumlahHarga = prefs.getString('newJumlahHarga');
+    final jumlahTunai = prefs.getInt('tunai');
+    final jumlahKembalian = prefs.getInt('kembali');
     setState(() {
       cart.forEach((item) {
         listSaveOrder.add(jsonDecode(item));
@@ -45,6 +48,8 @@ class _PaymentDetailsState extends State<PaymentDetails> {
     });
     setState(() {
       jumlahHarga = cartJumlahHarga.toString();
+      tunai = jumlahTunai.toString();
+      kembali = jumlahKembalian.toString();
     });
   }
 
@@ -83,7 +88,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
               key: _globalKey,
               child: Container(
                 height: 400,
-                width: 350,
+                width: 360,
                 color: Colors.white,
                 child: Stack(
                   alignment: Alignment.topCenter,
@@ -148,8 +153,6 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                             future: SQFliteBarang.sql.getPenjualanByLatest(),
                             builder:
                                 (BuildContext context, AsyncSnapshot snapshot) {
-                              print(
-                                  'data :${global.globalPenjualan.nomorTr.toString()}');
                               return snapshot.hasData
                                   ? ListView.builder(
                                       physics: NeverScrollableScrollPhysics(),
@@ -191,16 +194,16 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                                         Text('${barangData['Nama']}'),
                                         Padding(
                                             padding: EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 10)),
+                                                horizontal: 4)),
                                         Text('${barangData['quantity']}'),
                                         Padding(
                                             padding: EdgeInsets.symmetric(
-                                                horizontal: 15)),
+                                                horizontal: 4)),
                                         Text(rupiah(
                                             '@${barangData['hargaJual']}')),
                                         Padding(
                                             padding: EdgeInsets.symmetric(
-                                                horizontal: 10)),
+                                                horizontal: 4)),
                                         Text(rupiah(int.parse(
                                                 '${barangData['quantity']}') *
                                             int.parse(
@@ -226,31 +229,77 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                       padding: EdgeInsets.only(top: 260),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(30, 2, 10, 10),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Text(
-                              'Total',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 73),
+                                ),
+                                Text(
+                                  '${rupiah(jumlahHarga)}',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 70),
+                            Row(
+                              children: [
+                                Text(
+                                  'Tunai',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 70),
+                                ),
+                                Text(
+                                  '${rupiah(tunai)}',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              '${rupiah(jumlahHarga)}',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  'Kembali',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 60),
+                                ),
+                                Text(
+                                  '${rupiah(kembali)}',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
                     ),
                     Padding(
-                        padding: EdgeInsets.only(top: 300),
+                        padding: EdgeInsets.only(top: 320),
                         child: Stack(
                           alignment: Alignment.bottomCenter,
                           children: [
