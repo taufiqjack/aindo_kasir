@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 
 class SyncToLocal {
   Future getAllBarangtoLocal() async {
-    var url = BaseUrl.barangSync;
+    var url = BaseUrl.sinkronisasiBarang;
     Response response = await Dio().get(url);
 
     // productData = data["barang"];
@@ -20,7 +20,7 @@ class SyncToLocal {
   }
 
   Future getAllJenisBarangtoLocal() async {
-    var url = BaseUrl.barangSync;
+    var url = BaseUrl.sinkronisasiBarang;
     Response response = await Dio().get(url);
 
     // productData = data["barang"];

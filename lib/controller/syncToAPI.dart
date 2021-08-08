@@ -11,8 +11,6 @@ class SyncToAPI {
 
   void initState() {
     getData();
-    listItemDetail.add(item);
-    print(listItemDetail);
   }
 
   String? tokenID;
@@ -20,16 +18,23 @@ class SyncToAPI {
   getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var token = prefs.getString('token');
+    var itemList = prefs.getStringList('listItem')!;
+    itemList.forEach((item) {
+      savedlist.add(jsonDecode(item));
+    });
+
     tokenID = token;
   }
 
   List<PenjualanDetail> detailPenjualan = [];
   Map<String, dynamic> item = {};
+  List<Map> data = [];
   List<Map<String, dynamic>> listItemDetail = [];
   List<Map<dynamic, dynamic>> listSaveItem = [];
+  List<Map<String, dynamic>> savedlist = [];
 
   Future syncPenjualanToAPI(List<Penjualan> penjualan) async {
-    // listItemDetail = [];
+    List<Map> item = data;
     for (var i = 0; i < penjualan.length; i++) {
       Map<String, dynamic> dataSync = {
         "IDTr": penjualan[i].iDTr.toString(),
@@ -72,15 +77,17 @@ class SyncToAPI {
         print("pesan : $msg");
         print("pesan : $empty");
         print("pesan : $status");
-        print('data item : $listItemDetail');
+        print('data item : $item');
         print('data : $dataSync');
         print('penjualan : ${penjualan.length}');
+        print('detailPenjualan : ${detailPenjualan.length}');
 
         print("Menyimpan Data...");
       } else {
         print(response.statusCode);
       }
     }
+    return data;
   }
 
   Future fetchDataPenjualan() async {
@@ -115,8 +122,9 @@ class SyncToAPI {
   /* untuk sync PenjualanDetail */
   /*========================== */
 
+  // List<Map<dynamic, dynamic>> savedlist = [];
+
   Future syncPenjualanDetailToAPI(detailPenjualan) async {
-    listItemDetail = [item];
     for (var i = 0; i < detailPenjualan.length; i++) {
       item = {
         // 'IDTr': detailPenjualan[i].iDTr.toString(),
@@ -126,12 +134,29 @@ class SyncToAPI {
         "HargaBeli": detailPenjualan[i].hargaBeli.toString(),
         'DiskonSatuan': detailPenjualan[i].diskonSatuan.toString(),
       };
-      listItemDetail.add(item);
+
+      data.add(item);
+      // await Dio().post(BaseUrl.sinkronisasiPenjualan, data: {
+      //   'token': tokenID,
+      //   'data': [
+      //     {
+      //       'item': [listItemDetail]
+      //     }
+      //   ]
+      // });
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String>? itemList = prefs.getStringList('listItem');
+      if (itemList == null) itemList = [];
+      itemList.add(jsonEncode(savedlist));
+      prefs.setStringList('listItem', itemList);
 
       print("pesan : $item");
-      print(listItemDetail);
+      print(data);
+      print(detailPenjualan.length);
     }
-    print('cek :$listItemDetail');
+
+    return data;
   }
 
   Future fetchDataPenjualanDetail() async {
