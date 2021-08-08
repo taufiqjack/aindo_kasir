@@ -229,10 +229,10 @@ class _MenuKasirState extends State<MenuKasir> {
                               setState(() {
                                 isLoading = false;
                               });
+                              syncPenjualanDetail();
 
                               Future.delayed(Duration(seconds: 3), () {
                                 syncPenjualan();
-                                // syncPenjualanDetail();
 
                                 isLoading = true;
                                 Navigator.pop(context);
@@ -2266,34 +2266,29 @@ class _MenuKasirState extends State<MenuKasir> {
     }
   }
 
-  Future penjualanList() async {
-    list = await SQFliteBarang.sql.getPenjualan();
-    setState(() {});
-  }
+  // Future penjualanList() async {
+  //   list = await SQFliteBarang.sql.getPenjualan();
+  //   setState(() {});
+  // }
 
-  Future penjualanDetailList() async {
-    list = await SQFliteBarang.sql.getPenjualanDetail();
-    setState(() {});
-  }
+  // Future penjualanDetailList() async {
+  //   list = await SQFliteBarang.sql.getPenjualanDetail();
+  //   setState(() {});
+  // }
 
   Future syncPenjualan() async {
     await SyncToAPI().fetchAllPenjualan().then((penjualanList) async {
       await SyncToAPI().syncPenjualanToAPI(penjualanList);
     });
+  }
+
+  Future syncPenjualanDetail() async {
     await SyncToAPI()
         .fetchAllPenjualanDetail()
         .then((penjualanDetailList) async {
       await SyncToAPI().syncPenjualanDetailToAPI(penjualanDetailList);
     });
   }
-
-  // Future syncPenjualanDetail() async {
-  //   await SyncToAPI()
-  //       .fetchAllPenjualanDetail()
-  //       .then((penjualanDetailList) async {
-  //     await SyncToAPI().syncPenjualanDetailToAPI(penjualanDetailList);
-  //   });
-  // }
 
   // toastSyncPenjualan() {
   //   Fluttertoast.showToast(

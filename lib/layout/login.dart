@@ -79,7 +79,6 @@ class _LoginAppsState extends State<LoginApps> {
       message = jsonEncode(token.toString());
       prefs.setString('token', message);
       print('token : $token');
-      
     } else if (msg['msg'] == 'Username atau Password salah') {
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.setBool('success', false);
