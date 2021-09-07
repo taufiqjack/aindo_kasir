@@ -12,6 +12,7 @@ String penjualanDetailToJson(List<PenjualanDetail> data) =>
 class PenjualanDetail {
   const PenjualanDetail({
     this.iDTr,
+    this.nama,
     required this.iDBarang,
     required this.kuantiti,
     required this.hargaJual,
@@ -20,6 +21,7 @@ class PenjualanDetail {
   });
 
   final int? iDTr;
+  final String? nama;
   final int iDBarang;
   final int kuantiti;
   final int hargaJual;
@@ -29,6 +31,7 @@ class PenjualanDetail {
   factory PenjualanDetail.fromJson(Map<String, dynamic> json) =>
       PenjualanDetail(
           iDTr: json['IDTr'] != null ? json['IDTr'] as int : null,
+          nama: json['Nama'] as String,
           iDBarang: json['IDBarang'] as int,
           kuantiti: json['Kuantiti'] as int,
           hargaJual: json['HargaJual'] as int,
@@ -37,6 +40,7 @@ class PenjualanDetail {
 
   Map<String, dynamic> toJson() => {
         'IDTr': iDTr,
+        'Nama': iDTr,
         'IDBarang': iDBarang,
         'Kuantiti': kuantiti,
         'HargaJual': hargaJual,
@@ -46,6 +50,7 @@ class PenjualanDetail {
 
   PenjualanDetail clone() => PenjualanDetail(
       iDTr: iDTr,
+      nama: nama,
       iDBarang: iDBarang,
       kuantiti: kuantiti,
       hargaJual: hargaJual,
@@ -54,6 +59,7 @@ class PenjualanDetail {
 
   PenjualanDetail copyWith(
           {int? iDTr,
+          String? nama,
           int? iDBarang,
           int? kuantiti,
           int? hargaJual,
@@ -61,6 +67,7 @@ class PenjualanDetail {
           int? diskonSatuan}) =>
       PenjualanDetail(
         iDTr: iDTr ?? this.iDTr,
+        nama: nama ?? this.nama,
         iDBarang: iDBarang ?? this.iDBarang,
         kuantiti: kuantiti ?? this.kuantiti,
         hargaJual: hargaJual ?? this.hargaJual,
@@ -73,6 +80,7 @@ class PenjualanDetail {
       identical(this, other) ||
       other is PenjualanDetail &&
           iDTr == other.iDTr &&
+          nama == other.nama &&
           iDBarang == other.iDBarang &&
           kuantiti == other.kuantiti &&
           hargaJual == other.hargaJual &&
@@ -82,6 +90,7 @@ class PenjualanDetail {
   @override
   int get hashCode =>
       iDTr.hashCode ^
+      nama.hashCode ^
       iDBarang.hashCode ^
       kuantiti.hashCode ^
       hargaJual.hashCode ^

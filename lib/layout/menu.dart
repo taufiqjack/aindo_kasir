@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:aindo_kasir/controller/internet.dart';
 import 'package:aindo_kasir/controller/syncToAPI.dart';
 import 'package:aindo_kasir/database/SQFLite.dart';
+import 'package:aindo_kasir/layout/history_penjualan.dart';
 import 'package:aindo_kasir/layout/login.dart';
 import 'package:aindo_kasir/layout/orderpages.dart';
 import 'package:aindo_kasir/main.dart';
@@ -125,11 +126,16 @@ class _MenuKasirState extends State<MenuKasir> {
   @override
   void initState() {
     super.initState();
+    getStatusSync();
     setState(() {
       SQFliteBarang.sql.getBarang();
       getSQLiteBarang();
+      getBarang1();
+      getBarang2();
+      getBarang3();
+      getBarang4();
+      getAllBarang();
     });
-    getStatusSync();
     clearLoadOrder();
     getImagesNet();
   }
@@ -147,6 +153,2212 @@ class _MenuKasirState extends State<MenuKasir> {
   var searchbarcontroller = TextEditingController();
 
   List<Barang> cartList = <Barang>[];
+
+  List<Barang> listBarangFromJenis1 = [];
+  List<Barang> listBarangFromJenis2 = [];
+  List<Barang> listBarangFromJenis3 = [];
+  List<Barang> listBarangFromJenis4 = [];
+  List<Barang> listSearchCross = [];
+
+  getBarang1() async {
+    SQFliteBarang.sql.getBarang().then((value) {
+      setState(() {
+        value.forEach((data) {
+          listBarangFromJenis1.add(Barang(
+            iDBarang: data.iDBarang,
+            kodeBarang: data.kodeBarang,
+            nama: data.nama,
+            jenis: data.jenis,
+            hargaBeli: data.hargaBeli,
+            hargaJual: data.hargaJual,
+            gambar: data.gambar,
+            satuan: data.satuan,
+            statusAktif: data.statusAktif,
+          ));
+        });
+      });
+    }).catchError((error) {
+      print(error);
+    });
+  }
+
+  getBarang2() async {
+    SQFliteBarang.sql.getBarangFromJenis().then((value) {
+      setState(() {
+        value.forEach((data) {
+          listBarangFromJenis2.add(Barang(
+            iDBarang: data.iDBarang,
+            kodeBarang: data.kodeBarang,
+            nama: data.nama,
+            jenis: data.jenis,
+            hargaBeli: data.hargaBeli,
+            hargaJual: data.hargaJual,
+            gambar: data.gambar,
+            satuan: data.satuan,
+            statusAktif: data.statusAktif,
+          ));
+        });
+      });
+    }).catchError((error) {
+      print(error);
+    });
+  }
+
+  getBarang3() async {
+    SQFliteBarang.sql.getBarangFromJenis3().then((value) {
+      setState(() {
+        value.forEach((data) {
+          listBarangFromJenis3.add(Barang(
+            iDBarang: data.iDBarang,
+            kodeBarang: data.kodeBarang,
+            nama: data.nama,
+            jenis: data.jenis,
+            hargaBeli: data.hargaBeli,
+            hargaJual: data.hargaJual,
+            gambar: data.gambar,
+            satuan: data.satuan,
+            statusAktif: data.statusAktif,
+          ));
+        });
+      });
+    }).catchError((error) {
+      print(error);
+    });
+  }
+
+  getBarang4() async {
+    SQFliteBarang.sql.getBarangFromJenis4().then((value) {
+      setState(() {
+        value.forEach((data) {
+          listBarangFromJenis4.add(Barang(
+            iDBarang: data.iDBarang,
+            kodeBarang: data.kodeBarang,
+            nama: data.nama,
+            jenis: data.jenis,
+            hargaBeli: data.hargaBeli,
+            hargaJual: data.hargaJual,
+            gambar: data.gambar,
+            satuan: data.satuan,
+            statusAktif: data.statusAktif,
+          ));
+        });
+      });
+    }).catchError((error) {
+      print(error);
+    });
+  }
+
+  getAllBarang() async {
+    SQFliteBarang.sql.getAllBarang().then((value) {
+      setState(() {
+        value.forEach((data) {
+          listSearchCross.add(Barang(
+            iDBarang: data.iDBarang,
+            kodeBarang: data.kodeBarang,
+            nama: data.nama,
+            jenis: data.jenis,
+            hargaBeli: data.hargaBeli,
+            hargaJual: data.hargaJual,
+            gambar: data.gambar,
+            satuan: data.satuan,
+            statusAktif: data.statusAktif,
+          ));
+        });
+      });
+    }).catchError((error) {
+      print(error);
+    });
+  }
+
+  barangJenis1(BuildContext context) {
+    for (int i = 0; i < listBarangFromJenis1.length; i++) {
+      return ListView.builder(
+          itemCount: listBarangFromJenis1.length,
+          itemBuilder: (BuildContext context, index) {
+            final x = listBarangFromJenis1[index];
+            if (searchText.isEmpty) {
+              for (int i = 0; i < listBarangFromJenis1.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis1.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                  child: Column(children: [
+                ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: Image.network(
+                        "${BaseUrl.pathImage}/${x.gambar}",
+                        //   Image.memory(
+                        // bytes!,
+                        // width: 100.0,
+                        // height: 60.0,
+                        // ),
+                        height: 100,
+                        width: 60,
+                      ),
+                    ),
+                    title: Text(
+                      // "",
+                      '${x.nama}',
+                      style: TextStyle(color: Colors.indigo.shade600),
+                    ),
+                    trailing: Text(
+                      "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                                builder: (context, setState) {
+                              return AlertDialog(
+                                content: ListTile(
+                                  isThreeLine: true,
+                                  leading: Image.network(
+                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  ),
+                                  title: Text(
+                                    '${x.nama}',
+                                    style: TextStyle(
+                                        color: Colors.indigo.shade600),
+                                  ),
+                                  subtitle: Text(
+                                    rupiah('${x.hargaJual}', trailing: '.00'),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                actions: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Card(
+                                              child: Container(
+                                                height: 50,
+                                                width: 120,
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    right: 5),
+                                                          ),
+                                                          _itemCount[index] !=
+                                                                      0 &&
+                                                                  _itemCountBeli[
+                                                                          index] !=
+                                                                      0
+                                                              ? new IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    setState(
+                                                                        () {
+                                                                      _itemCount[
+                                                                          index]--;
+                                                                      _itemCountBeli[
+                                                                          index]--;
+                                                                      itemIndex--;
+                                                                      jumlahHargaItem[
+                                                                          index] = int.parse(x
+                                                                              .hargaJual) *
+                                                                          _itemCount[
+                                                                              index];
+                                                                      jumlahHargaBeliItem[
+                                                                          index] = int.parse(x
+                                                                              .hargaBeli) *
+                                                                          _itemCountBeli[
+                                                                              index];
+                                                                      print(jumlahHargaItem[
+                                                                          index]);
+                                                                      print(jumlahHargaBeliItem[
+                                                                          index]);
+                                                                    });
+                                                                  })
+                                                              : IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      null,
+                                                                ),
+                                                          new Text(
+                                                            _itemCount[index]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          new IconButton(
+                                                              icon: Icon(
+                                                                  Icons.add),
+                                                              onPressed:
+                                                                  () async {
+                                                                setState(() {
+                                                                  _itemCount[
+                                                                      index]++;
+                                                                  _itemCountBeli[
+                                                                      index]++;
+                                                                  itemIndex++;
+                                                                  jumlahHargaItem[
+                                                                      index] = int
+                                                                          .parse(x
+                                                                              .hargaJual) *
+                                                                      _itemCount[
+                                                                          index];
+                                                                  jumlahHargaBeliItem[
+                                                                      index] = int
+                                                                          .parse(x
+                                                                              .hargaBeli) *
+                                                                      _itemCountBeli[
+                                                                          index];
+                                                                  print(jumlahHargaItem[
+                                                                      index]);
+                                                                  print(jumlahHargaBeliItem[
+                                                                      index]);
+                                                                });
+                                                              }),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                          padding: EdgeInsets.only(top: 10)),
+                                      ButtonBar(
+                                        alignment: MainAxisAlignment.center,
+                                        children: [
+                                          btnTambah(context, x, index),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              );
+                            });
+                          });
+                    }),
+                Padding(padding: EdgeInsets.only(top: 10)),
+                Divider(
+                  thickness: 2,
+                )
+              ]));
+            } else if (x.nama
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase())) {
+              for (int i = 0; i < listBarangFromJenis1.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis1.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Image.network(
+                          "${BaseUrl.pathImage}/${x.gambar}",
+                          height: 100,
+                          width: 60,
+                        ),
+                      ),
+                      title: Text(
+                        // "",
+                        '${x.nama}',
+                        style: TextStyle(color: Colors.indigo.shade600),
+                      ),
+                      trailing: Text(
+                        "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return StatefulBuilder(
+                                  builder: (context, setState) {
+                                return AlertDialog(
+                                  content: ListTile(
+                                    isThreeLine: true,
+                                    leading: Image.network(
+                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    ),
+                                    title: Text(
+                                      '${x.nama}',
+                                      style: TextStyle(
+                                          color: Colors.indigo.shade600),
+                                    ),
+                                    subtitle: Text(
+                                      rupiah('${x.hargaJual}', trailing: '.00'),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  actions: [
+                                    Column(
+                                      children: [
+                                        Container(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Card(
+                                                child: Container(
+                                                  height: 50,
+                                                  width: 120,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                      right: 5),
+                                                            ),
+                                                            _itemCount[index] !=
+                                                                    0
+                                                                ? new IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      setState(
+                                                                          () {
+                                                                        _itemCount[
+                                                                            index]--;
+                                                                        _itemCountBeli[
+                                                                            index]--;
+
+                                                                        itemIndex--;
+                                                                        jumlahHargaItem[
+                                                                            index] = int.parse(
+                                                                                x.hargaJual) *
+                                                                            _itemCount[index];
+                                                                        jumlahHargaBeliItem[
+                                                                            index] = int.parse(
+                                                                                x.hargaBeli) *
+                                                                            _itemCountBeli[index];
+                                                                      });
+                                                                    })
+                                                                : IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        null,
+                                                                  ),
+                                                            new Text(
+                                                              _itemCount[index]
+                                                                  .toString(),
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            new IconButton(
+                                                                icon: Icon(
+                                                                    Icons.add),
+                                                                onPressed:
+                                                                    () async {
+                                                                  setState(() {
+                                                                    _itemCount[
+                                                                        index]++;
+                                                                    _itemCountBeli[
+                                                                        index]++;
+
+                                                                    itemIndex++;
+                                                                    jumlahHargaItem[
+                                                                        index] = int.parse(x
+                                                                            .hargaJual) *
+                                                                        _itemCount[
+                                                                            index];
+                                                                    jumlahHargaBeliItem[
+                                                                        index] = int.parse(x
+                                                                            .hargaBeli) *
+                                                                        _itemCountBeli[
+                                                                            index];
+                                                                  });
+                                                                }),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.only(top: 10)),
+                                        ButtonBar(
+                                          alignment: MainAxisAlignment.center,
+                                          children: [
+                                            btnTambah(context, x, index),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              });
+                            });
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Divider(
+                      thickness: 2,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          });
+    }
+  }
+
+  barangJenis2(BuildContext context) {
+    for (int i = 0; i < listBarangFromJenis2.length; i++) {
+      return ListView.builder(
+          itemCount: listBarangFromJenis2.length,
+          itemBuilder: (BuildContext context, index) {
+            final x = listBarangFromJenis2[index];
+            if (searchText.isEmpty) {
+              for (int i = 0; i < listBarangFromJenis2.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis2.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                  child: Column(children: [
+                ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: Image.network(
+                        "${BaseUrl.pathImage}/${x.gambar}",
+                        //   Image.memory(
+                        // bytes!,
+                        // width: 100.0,
+                        // height: 60.0,
+                        // ),
+                        height: 100,
+                        width: 60,
+                      ),
+                    ),
+                    title: Text(
+                      // "",
+                      '${x.nama}',
+                      style: TextStyle(color: Colors.indigo.shade600),
+                    ),
+                    trailing: Text(
+                      "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                                builder: (context, setState) {
+                              return AlertDialog(
+                                content: ListTile(
+                                  isThreeLine: true,
+                                  leading: Image.network(
+                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  ),
+                                  title: Text(
+                                    '${x.nama}',
+                                    style: TextStyle(
+                                        color: Colors.indigo.shade600),
+                                  ),
+                                  subtitle: Text(
+                                    rupiah('${x.hargaJual}', trailing: '.00'),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                actions: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Card(
+                                              child: Container(
+                                                height: 50,
+                                                width: 120,
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    right: 5),
+                                                          ),
+                                                          _itemCount[_itemCount
+                                                                              .length -
+                                                                          1] !=
+                                                                      0 &&
+                                                                  _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1] !=
+                                                                      0
+                                                              ? new IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    setState(
+                                                                        () {
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      itemIndex--;
+                                                                      jumlahHargaItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaJual) *
+                                                                          _itemCount[_itemCount.length -
+                                                                              1];
+                                                                      jumlahHargaBeliItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaBeli) *
+                                                                          _itemCountBeli[_itemCount.length -
+                                                                              1];
+                                                                      print(jumlahHargaItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                      print(jumlahHargaBeliItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                    });
+                                                                  })
+                                                              : IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      null,
+                                                                ),
+                                                          new Text(
+                                                            _itemCount[_itemCount
+                                                                        .length -
+                                                                    1]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          new IconButton(
+                                                              icon: Icon(
+                                                                  Icons.add),
+                                                              onPressed:
+                                                                  () async {
+                                                                setState(() {
+                                                                  _itemCount[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  _itemCountBeli[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  itemIndex++;
+                                                                  jumlahHargaItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaJual) *
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  jumlahHargaBeliItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaBeli) *
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  print(jumlahHargaItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                  print(jumlahHargaBeliItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                });
+                                                              }),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                          padding: EdgeInsets.only(top: 10)),
+                                      ButtonBar(
+                                        alignment: MainAxisAlignment.center,
+                                        children: [
+                                          btnTambah(context, x,
+                                              _itemCount.length - 1),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              );
+                            });
+                          });
+                    }),
+                Padding(padding: EdgeInsets.only(top: 10)),
+                Divider(
+                  thickness: 2,
+                )
+              ]));
+            } else if (x.nama
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase())) {
+              for (int i = 0; i < listBarangFromJenis2.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis2.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Image.network(
+                          "${BaseUrl.pathImage}/${x.gambar}",
+                          height: 100,
+                          width: 60,
+                        ),
+                      ),
+                      title: Text(
+                        // "",
+                        '${x.nama}',
+                        style: TextStyle(color: Colors.indigo.shade600),
+                      ),
+                      trailing: Text(
+                        "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return StatefulBuilder(
+                                  builder: (context, setState) {
+                                return AlertDialog(
+                                  content: ListTile(
+                                    isThreeLine: true,
+                                    leading: Image.network(
+                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    ),
+                                    title: Text(
+                                      '${x.nama}',
+                                      style: TextStyle(
+                                          color: Colors.indigo.shade600),
+                                    ),
+                                    subtitle: Text(
+                                      rupiah('${x.hargaJual}', trailing: '.00'),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  actions: [
+                                    Column(
+                                      children: [
+                                        Container(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Card(
+                                                child: Container(
+                                                  height: 50,
+                                                  width: 120,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                      right: 5),
+                                                            ),
+                                                            _itemCount[_itemCount
+                                                                            .length -
+                                                                        1] !=
+                                                                    0
+                                                                ? new IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      setState(
+                                                                          () {
+                                                                        _itemCount[_itemCount.length -
+                                                                            1]--;
+                                                                        _itemCountBeli[_itemCount.length -
+                                                                            1]--;
+
+                                                                        itemIndex--;
+                                                                        jumlahHargaItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaJual) *
+                                                                            _itemCount[_itemCount.length -
+                                                                                1];
+                                                                        jumlahHargaBeliItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaBeli) *
+                                                                            _itemCountBeli[_itemCount.length -
+                                                                                1];
+                                                                      });
+                                                                    })
+                                                                : IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        null,
+                                                                  ),
+                                                            new Text(
+                                                              _itemCount[_itemCount
+                                                                          .length -
+                                                                      1]
+                                                                  .toString(),
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            new IconButton(
+                                                                icon: Icon(
+                                                                    Icons.add),
+                                                                onPressed:
+                                                                    () async {
+                                                                  setState(() {
+                                                                    _itemCount[
+                                                                        _itemCount.length -
+                                                                            1]++;
+                                                                    _itemCountBeli[
+                                                                        _itemCount.length -
+                                                                            1]++;
+
+                                                                    itemIndex++;
+                                                                    jumlahHargaItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaJual) *
+                                                                        _itemCount[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                    jumlahHargaBeliItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaBeli) *
+                                                                        _itemCountBeli[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                  });
+                                                                }),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.only(top: 10)),
+                                        ButtonBar(
+                                          alignment: MainAxisAlignment.center,
+                                          children: [
+                                            btnTambah(context, x,
+                                                _itemCount.length - 1),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              });
+                            });
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Divider(
+                      thickness: 2,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          });
+    }
+  }
+
+  barangJenis3(BuildContext context) {
+    for (int i = 0; i < listBarangFromJenis3.length; i++) {
+      return ListView.builder(
+          itemCount: listBarangFromJenis3.length,
+          itemBuilder: (BuildContext context, index) {
+            final x = listBarangFromJenis3[index];
+            if (searchText.isEmpty) {
+              for (int i = 0; i < listBarangFromJenis3.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis3.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                  child: Column(children: [
+                ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: Image.network(
+                        "${BaseUrl.pathImage}/${x.gambar}",
+                        //   Image.memory(
+                        // bytes!,
+                        // width: 100.0,
+                        // height: 60.0,
+                        // ),
+                        height: 100,
+                        width: 60,
+                      ),
+                    ),
+                    title: Text(
+                      // "",
+                      '${x.nama}',
+                      style: TextStyle(color: Colors.indigo.shade600),
+                    ),
+                    trailing: Text(
+                      "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                                builder: (context, setState) {
+                              return AlertDialog(
+                                content: ListTile(
+                                  isThreeLine: true,
+                                  leading: Image.network(
+                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  ),
+                                  title: Text(
+                                    '${x.nama}',
+                                    style: TextStyle(
+                                        color: Colors.indigo.shade600),
+                                  ),
+                                  subtitle: Text(
+                                    rupiah('${x.hargaJual}', trailing: '.00'),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                actions: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Card(
+                                              child: Container(
+                                                height: 50,
+                                                width: 120,
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    right: 5),
+                                                          ),
+                                                          _itemCount[_itemCount
+                                                                              .length -
+                                                                          1] !=
+                                                                      0 &&
+                                                                  _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1] !=
+                                                                      0
+                                                              ? new IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    setState(
+                                                                        () {
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      itemIndex--;
+                                                                      jumlahHargaItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaJual) *
+                                                                          _itemCount[_itemCount.length -
+                                                                              1];
+                                                                      jumlahHargaBeliItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaBeli) *
+                                                                          _itemCountBeli[_itemCount.length -
+                                                                              1];
+                                                                      print(jumlahHargaItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                      print(jumlahHargaBeliItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                    });
+                                                                  })
+                                                              : IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      null,
+                                                                ),
+                                                          new Text(
+                                                            _itemCount[_itemCount
+                                                                        .length -
+                                                                    1]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          new IconButton(
+                                                              icon: Icon(
+                                                                  Icons.add),
+                                                              onPressed:
+                                                                  () async {
+                                                                setState(() {
+                                                                  _itemCount[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  _itemCountBeli[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  itemIndex++;
+                                                                  jumlahHargaItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaJual) *
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  jumlahHargaBeliItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaBeli) *
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  print(jumlahHargaItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                  print(jumlahHargaBeliItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                });
+                                                              }),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                          padding: EdgeInsets.only(top: 10)),
+                                      ButtonBar(
+                                        alignment: MainAxisAlignment.center,
+                                        children: [
+                                          btnTambah(context, x,
+                                              _itemCount.length - 1),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              );
+                            });
+                          });
+                    }),
+                Padding(padding: EdgeInsets.only(top: 10)),
+                Divider(
+                  thickness: 2,
+                )
+              ]));
+            } else if (x.nama
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase())) {
+              for (int i = 0; i < listBarangFromJenis3.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis3.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Image.network(
+                          "${BaseUrl.pathImage}/${x.gambar}",
+                          height: 100,
+                          width: 60,
+                        ),
+                      ),
+                      title: Text(
+                        // "",
+                        '${x.nama}',
+                        style: TextStyle(color: Colors.indigo.shade600),
+                      ),
+                      trailing: Text(
+                        "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return StatefulBuilder(
+                                  builder: (context, setState) {
+                                return AlertDialog(
+                                  content: ListTile(
+                                    isThreeLine: true,
+                                    leading: Image.network(
+                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    ),
+                                    title: Text(
+                                      '${x.nama}',
+                                      style: TextStyle(
+                                          color: Colors.indigo.shade600),
+                                    ),
+                                    subtitle: Text(
+                                      rupiah('${x.hargaJual}', trailing: '.00'),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  actions: [
+                                    Column(
+                                      children: [
+                                        Container(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Card(
+                                                child: Container(
+                                                  height: 50,
+                                                  width: 120,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                      right: 5),
+                                                            ),
+                                                            _itemCount[_itemCount
+                                                                            .length -
+                                                                        1] !=
+                                                                    0
+                                                                ? new IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      setState(
+                                                                          () {
+                                                                        _itemCount[_itemCount.length -
+                                                                            1]--;
+                                                                        _itemCountBeli[_itemCount.length -
+                                                                            1]--;
+
+                                                                        itemIndex--;
+                                                                        jumlahHargaItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaJual) *
+                                                                            _itemCount[_itemCount.length -
+                                                                                1];
+                                                                        jumlahHargaBeliItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaBeli) *
+                                                                            _itemCountBeli[_itemCount.length -
+                                                                                1];
+                                                                      });
+                                                                    })
+                                                                : IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        null,
+                                                                  ),
+                                                            new Text(
+                                                              _itemCount[_itemCount
+                                                                          .length -
+                                                                      1]
+                                                                  .toString(),
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            new IconButton(
+                                                                icon: Icon(
+                                                                    Icons.add),
+                                                                onPressed:
+                                                                    () async {
+                                                                  setState(() {
+                                                                    _itemCount[
+                                                                        _itemCount.length -
+                                                                            1]++;
+                                                                    _itemCountBeli[
+                                                                        _itemCount.length -
+                                                                            1]++;
+
+                                                                    itemIndex++;
+                                                                    jumlahHargaItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaJual) *
+                                                                        _itemCount[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                    jumlahHargaBeliItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaBeli) *
+                                                                        _itemCountBeli[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                  });
+                                                                }),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.only(top: 10)),
+                                        ButtonBar(
+                                          alignment: MainAxisAlignment.center,
+                                          children: [
+                                            btnTambah(context, x,
+                                                _itemCount.length - 1),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              });
+                            });
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Divider(
+                      thickness: 2,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          });
+    }
+  }
+
+  barangJenis4(BuildContext context) {
+    for (int i = 0; i < listBarangFromJenis4.length; i++) {
+      return ListView.builder(
+          itemCount: listBarangFromJenis4.length,
+          itemBuilder: (BuildContext context, index) {
+            final x = listBarangFromJenis4[index];
+            if (searchText.isEmpty) {
+              for (int i = 0; i < listBarangFromJenis4.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis4.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                  child: Column(children: [
+                ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: Image.network(
+                        "${BaseUrl.pathImage}/${x.gambar}",
+                        //   Image.memory(
+                        // bytes!,
+                        // width: 100.0,
+                        // height: 60.0,
+                        // ),
+                        height: 100,
+                        width: 60,
+                      ),
+                    ),
+                    title: Text(
+                      // "",
+                      '${x.nama}',
+                      style: TextStyle(color: Colors.indigo.shade600),
+                    ),
+                    trailing: Text(
+                      "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                                builder: (context, setState) {
+                              return AlertDialog(
+                                content: ListTile(
+                                  isThreeLine: true,
+                                  leading: Image.network(
+                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  ),
+                                  title: Text(
+                                    '${x.nama}',
+                                    style: TextStyle(
+                                        color: Colors.indigo.shade600),
+                                  ),
+                                  subtitle: Text(
+                                    rupiah('${x.hargaJual}', trailing: '.00'),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                actions: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Card(
+                                              child: Container(
+                                                height: 50,
+                                                width: 120,
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    right: 5),
+                                                          ),
+                                                          _itemCount[_itemCount
+                                                                              .length -
+                                                                          1] !=
+                                                                      0 &&
+                                                                  _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1] !=
+                                                                      0
+                                                              ? new IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    setState(
+                                                                        () {
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      itemIndex--;
+                                                                      jumlahHargaItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaJual) *
+                                                                          _itemCount[_itemCount.length -
+                                                                              1];
+                                                                      jumlahHargaBeliItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaBeli) *
+                                                                          _itemCountBeli[_itemCount.length -
+                                                                              1];
+                                                                      print(jumlahHargaItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                      print(jumlahHargaBeliItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                    });
+                                                                  })
+                                                              : IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      null,
+                                                                ),
+                                                          new Text(
+                                                            _itemCount[_itemCount
+                                                                        .length -
+                                                                    1]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          new IconButton(
+                                                              icon: Icon(
+                                                                  Icons.add),
+                                                              onPressed:
+                                                                  () async {
+                                                                setState(() {
+                                                                  _itemCount[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  _itemCountBeli[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  itemIndex++;
+                                                                  jumlahHargaItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaJual) *
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  jumlahHargaBeliItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaBeli) *
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  print(jumlahHargaItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                  print(jumlahHargaBeliItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                });
+                                                              }),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                          padding: EdgeInsets.only(top: 10)),
+                                      ButtonBar(
+                                        alignment: MainAxisAlignment.center,
+                                        children: [
+                                          btnTambah(context, x,
+                                              _itemCount.length - 1),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              );
+                            });
+                          });
+                    }),
+                Padding(padding: EdgeInsets.only(top: 10)),
+                Divider(
+                  thickness: 2,
+                )
+              ]));
+            } else if (x.nama
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase())) {
+              for (int i = 0; i < listBarangFromJenis4.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listBarangFromJenis4.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Image.network(
+                          "${BaseUrl.pathImage}/${x.gambar}",
+                          height: 100,
+                          width: 60,
+                        ),
+                      ),
+                      title: Text(
+                        // "",
+                        '${x.nama}',
+                        style: TextStyle(color: Colors.indigo.shade600),
+                      ),
+                      trailing: Text(
+                        "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return StatefulBuilder(
+                                  builder: (context, setState) {
+                                return AlertDialog(
+                                  content: ListTile(
+                                    isThreeLine: true,
+                                    leading: Image.network(
+                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    ),
+                                    title: Text(
+                                      '${x.nama}',
+                                      style: TextStyle(
+                                          color: Colors.indigo.shade600),
+                                    ),
+                                    subtitle: Text(
+                                      rupiah('${x.hargaJual}', trailing: '.00'),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  actions: [
+                                    Column(
+                                      children: [
+                                        Container(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Card(
+                                                child: Container(
+                                                  height: 50,
+                                                  width: 120,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                      right: 5),
+                                                            ),
+                                                            _itemCount[_itemCount
+                                                                            .length -
+                                                                        1] !=
+                                                                    0
+                                                                ? new IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      setState(
+                                                                          () {
+                                                                        _itemCount[_itemCount.length -
+                                                                            1]--;
+                                                                        _itemCountBeli[_itemCount.length -
+                                                                            1]--;
+
+                                                                        itemIndex--;
+                                                                        jumlahHargaItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaJual) *
+                                                                            _itemCount[_itemCount.length -
+                                                                                1];
+                                                                        jumlahHargaBeliItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaBeli) *
+                                                                            _itemCountBeli[_itemCount.length -
+                                                                                1];
+                                                                      });
+                                                                    })
+                                                                : IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        null,
+                                                                  ),
+                                                            new Text(
+                                                              _itemCount[_itemCount
+                                                                          .length -
+                                                                      1]
+                                                                  .toString(),
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            new IconButton(
+                                                                icon: Icon(
+                                                                    Icons.add),
+                                                                onPressed:
+                                                                    () async {
+                                                                  setState(() {
+                                                                    _itemCount[
+                                                                        _itemCount.length -
+                                                                            1]++;
+                                                                    _itemCountBeli[
+                                                                        _itemCount.length -
+                                                                            1]++;
+
+                                                                    itemIndex++;
+                                                                    jumlahHargaItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaJual) *
+                                                                        _itemCount[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                    jumlahHargaBeliItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaBeli) *
+                                                                        _itemCountBeli[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                  });
+                                                                }),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.only(top: 10)),
+                                        ButtonBar(
+                                          alignment: MainAxisAlignment.center,
+                                          children: [
+                                            btnTambah(context, x,
+                                                _itemCount.length - 1),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              });
+                            });
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Divider(
+                      thickness: 2,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          });
+    }
+  }
+
+  barangCrossSearch(BuildContext context) {
+    for (int i = 0; i < listSearchCross.length; i++) {
+      return ListView.builder(
+          itemCount: listSearchCross.length,
+          itemBuilder: (BuildContext context, index) {
+            final x = listSearchCross[index];
+            if (searchText.isEmpty) {
+              for (int i = 0; i < listSearchCross.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listSearchCross.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                  child: Column(children: [
+                ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(5.0),
+                      child: Image.network(
+                        "${BaseUrl.pathImage}/${x.gambar}",
+                        //   Image.memory(
+                        // bytes!,
+                        // width: 100.0,
+                        // height: 60.0,
+                        // ),
+                        height: 100,
+                        width: 60,
+                      ),
+                    ),
+                    title: Text(
+                      // "",
+                      '${x.nama}',
+                      style: TextStyle(color: Colors.indigo.shade600),
+                    ),
+                    trailing: Text(
+                      "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                                builder: (context, setState) {
+                              return AlertDialog(
+                                content: ListTile(
+                                  isThreeLine: true,
+                                  leading: Image.network(
+                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  ),
+                                  title: Text(
+                                    '${x.nama}',
+                                    style: TextStyle(
+                                        color: Colors.indigo.shade600),
+                                  ),
+                                  subtitle: Text(
+                                    rupiah('${x.hargaJual}', trailing: '.00'),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                actions: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Card(
+                                              child: Container(
+                                                height: 50,
+                                                width: 120,
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsets.only(
+                                                                    right: 5),
+                                                          ),
+                                                          _itemCount[_itemCount
+                                                                              .length -
+                                                                          1] !=
+                                                                      0 &&
+                                                                  _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1] !=
+                                                                      0
+                                                              ? new IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      () async {
+                                                                    setState(
+                                                                        () {
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1]--;
+                                                                      itemIndex--;
+                                                                      jumlahHargaItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaJual) *
+                                                                          _itemCount[_itemCount.length -
+                                                                              1];
+                                                                      jumlahHargaBeliItem[_itemCount
+                                                                              .length -
+                                                                          1] = int.parse(x
+                                                                              .hargaBeli) *
+                                                                          _itemCountBeli[_itemCount.length -
+                                                                              1];
+                                                                      print(jumlahHargaItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                      print(jumlahHargaBeliItem[
+                                                                          _itemCount.length -
+                                                                              1]);
+                                                                    });
+                                                                  })
+                                                              : IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .remove),
+                                                                  onPressed:
+                                                                      null,
+                                                                ),
+                                                          new Text(
+                                                            _itemCount[_itemCount
+                                                                        .length -
+                                                                    1]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          new IconButton(
+                                                              icon: Icon(
+                                                                  Icons.add),
+                                                              onPressed:
+                                                                  () async {
+                                                                setState(() {
+                                                                  _itemCount[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  _itemCountBeli[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]++;
+                                                                  itemIndex++;
+                                                                  jumlahHargaItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaJual) *
+                                                                      _itemCount[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  jumlahHargaBeliItem[_itemCount
+                                                                          .length -
+                                                                      1] = int.parse(x
+                                                                          .hargaBeli) *
+                                                                      _itemCountBeli[
+                                                                          _itemCount.length -
+                                                                              1];
+                                                                  print(jumlahHargaItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                  print(jumlahHargaBeliItem[
+                                                                      _itemCount
+                                                                              .length -
+                                                                          1]);
+                                                                });
+                                                              }),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                          padding: EdgeInsets.only(top: 10)),
+                                      ButtonBar(
+                                        alignment: MainAxisAlignment.center,
+                                        children: [
+                                          btnTambah(context, x,
+                                              _itemCount.length - 1),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              );
+                            });
+                          });
+                    }),
+                Padding(padding: EdgeInsets.only(top: 10)),
+                Divider(
+                  thickness: 2,
+                )
+              ]));
+            } else if (x.nama
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase())) {
+              for (int i = 0; i < listSearchCross.length; i++) {
+                _itemCount.add(0);
+                jumlahHargaItem.add(0);
+                for (int i = 0; i < listSearchCross.length; i++) {
+                  _itemCountBeli.add(0);
+                  jumlahHargaBeliItem.add(0);
+                }
+              }
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: Image.network(
+                          "${BaseUrl.pathImage}/${x.gambar}",
+                          height: 100,
+                          width: 60,
+                        ),
+                      ),
+                      title: Text(
+                        // "",
+                        '${x.nama}',
+                        style: TextStyle(color: Colors.indigo.shade600),
+                      ),
+                      trailing: Text(
+                        "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return StatefulBuilder(
+                                  builder: (context, setState) {
+                                return AlertDialog(
+                                  content: ListTile(
+                                    isThreeLine: true,
+                                    leading: Image.network(
+                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    ),
+                                    title: Text(
+                                      '${x.nama}',
+                                      style: TextStyle(
+                                          color: Colors.indigo.shade600),
+                                    ),
+                                    subtitle: Text(
+                                      rupiah('${x.hargaJual}', trailing: '.00'),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  actions: [
+                                    Column(
+                                      children: [
+                                        Container(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Card(
+                                                child: Container(
+                                                  height: 50,
+                                                  width: 120,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding: EdgeInsets
+                                                                  .only(
+                                                                      right: 5),
+                                                            ),
+                                                            _itemCount[_itemCount
+                                                                            .length -
+                                                                        1] !=
+                                                                    0
+                                                                ? new IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      setState(
+                                                                          () {
+                                                                        _itemCount[_itemCount.length -
+                                                                            1]--;
+                                                                        _itemCountBeli[_itemCount.length -
+                                                                            1]--;
+
+                                                                        itemIndex--;
+                                                                        jumlahHargaItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaJual) *
+                                                                            _itemCount[_itemCount.length -
+                                                                                1];
+                                                                        jumlahHargaBeliItem[
+                                                                            _itemCount.length -
+                                                                                1] = int.parse(x.hargaBeli) *
+                                                                            _itemCountBeli[_itemCount.length -
+                                                                                1];
+                                                                      });
+                                                                    })
+                                                                : IconButton(
+                                                                    icon: Icon(Icons
+                                                                        .remove),
+                                                                    onPressed:
+                                                                        null,
+                                                                  ),
+                                                            new Text(
+                                                              _itemCount[_itemCount
+                                                                          .length -
+                                                                      1]
+                                                                  .toString(),
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            new IconButton(
+                                                                icon: Icon(
+                                                                    Icons.add),
+                                                                onPressed:
+                                                                    () async {
+                                                                  setState(() {
+                                                                    _itemCount[
+                                                                        _itemCount.length -
+                                                                            1]++;
+                                                                    _itemCountBeli[
+                                                                        _itemCount.length -
+                                                                            1]++;
+
+                                                                    itemIndex++;
+                                                                    jumlahHargaItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaJual) *
+                                                                        _itemCount[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                    jumlahHargaBeliItem[_itemCount
+                                                                            .length -
+                                                                        1] = int.parse(x
+                                                                            .hargaBeli) *
+                                                                        _itemCountBeli[
+                                                                            _itemCount.length -
+                                                                                1];
+                                                                  });
+                                                                }),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.only(top: 10)),
+                                        ButtonBar(
+                                          alignment: MainAxisAlignment.center,
+                                          children: [
+                                            btnTambah(context, x,
+                                                _itemCount.length - 1),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                );
+                              });
+                            });
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Divider(
+                      thickness: 2,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          });
+    }
+  }
 
   getImagesNet() async {
     final ByteData imageData = await NetworkAssetBundle(
@@ -229,11 +2441,10 @@ class _MenuKasirState extends State<MenuKasir> {
                               setState(() {
                                 isLoading = false;
                               });
-                              syncPenjualanDetail();
+                              syncPenjualan();
+                              // syncPenjualanDetail();
 
                               Future.delayed(Duration(seconds: 3), () {
-                                syncPenjualan();
-
                                 isLoading = true;
                                 Navigator.pop(context);
                                 syncAlert();
@@ -282,6 +2493,19 @@ class _MenuKasirState extends State<MenuKasir> {
                                   });
                             }
                           });
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.list_outlined),
+                        title: Text("History Penjualan"),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                              child: HistoryPenjualan(),
+                              type: PageTransitionType.fade,
+                            ),
+                          );
                         },
                       ),
                     ],
@@ -341,1495 +2565,124 @@ class _MenuKasirState extends State<MenuKasir> {
                     ));
                   }
 
-                  return DefaultTabController(
-                    length: snapshot.data.length,
-                    child: Stack(
-                      alignment: Alignment.topCenter,
-                      children: [
-                        Stack(
-                          children: [
-                            TabBar(
-                              labelPadding:
-                                  EdgeInsets.symmetric(horizontal: 20.0),
-                              labelColor: Colors.black,
-                              isScrollable: true,
-                              tabs: tabs,
-                            ),
-                          ],
-                        ),
-                        SingleChildScrollView(
-                          padding: EdgeInsets.symmetric(vertical: 50),
-                          child: Stack(
-                            alignment: Alignment.bottomCenter,
-                            children: [
-                              Container(
-                                height: 600,
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        top: BorderSide(
-                                            color: Colors.white, width: 0.5))),
-                                child: Stack(
-                                  children: [
-                                    TabBarView(
-                                      children: [
-                                        Stack(
-                                          children: [
-                                            Container(
-                                              child: Stack(
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.all(10),
-                                                    child: FutureBuilder(
-                                                      future: SQFliteBarang.sql
-                                                          .getBarang(),
-                                                      builder:
-                                                          (BuildContext context,
-                                                              AsyncSnapshot
-                                                                  snapshot) {
-                                                        return snapshot.hasData
-                                                            ? ListView.builder(
-                                                                itemCount:
-                                                                    snapshot
-                                                                        .data
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (BuildContext
-                                                                            context,
-                                                                        int
-                                                                            index) {
-                                                                  final x = snapshot
-                                                                          .data[
-                                                                      index];
-                                                                  if (searchText
-                                                                      .isEmpty) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                              leading: ClipRRect(
-                                                                                borderRadius: BorderRadius.circular(5.0),
-                                                                                child: Image.network(
-                                                                                  "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                  //   Image.memory(
-                                                                                  // bytes!,
-                                                                                  // width: 100.0,
-                                                                                  // height: 60.0,
-                                                                                  // ),
-                                                                                  height: 100,
-                                                                                  width: 60,
-                                                                                ),
-                                                                              ),
-                                                                              title: Text(
-                                                                                // "",
-                                                                                '${x.nama}',
-                                                                                style: TextStyle(color: Colors.indigo.shade600),
-                                                                              ),
-                                                                              trailing: Text(
-                                                                                "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                              ),
-                                                                              onTap: () {
-                                                                                showDialog(
-                                                                                    context: context,
-                                                                                    builder: (BuildContext context) {
-                                                                                      return StatefulBuilder(builder: (context, setState) {
-                                                                                        return AlertDialog(
-                                                                                          content: ListTile(
-                                                                                            isThreeLine: true,
-                                                                                            leading: Image.network(
-                                                                                              "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                            ),
-                                                                                            title: Text(
-                                                                                              '${x.nama}',
-                                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                                            ),
-                                                                                            subtitle: Text(
-                                                                                              rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                              style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                            ),
-                                                                                          ),
-                                                                                          actions: [
-                                                                                            Column(
-                                                                                              children: [
-                                                                                                Container(
-                                                                                                  child: Row(
-                                                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                    children: [
-                                                                                                      Card(
-                                                                                                        child: Container(
-                                                                                                          height: 50,
-                                                                                                          width: 120,
-                                                                                                          child: Row(
-                                                                                                            children: [
-                                                                                                              Container(
-                                                                                                                alignment: Alignment.center,
-                                                                                                                child: Row(
-                                                                                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                  children: [
-                                                                                                                    Padding(
-                                                                                                                      padding: EdgeInsets.only(right: 5),
-                                                                                                                    ),
-                                                                                                                    _itemCount[index] != 0 && _itemCountBeli[index] != 0
-                                                                                                                        ? new IconButton(
-                                                                                                                            icon: Icon(Icons.remove),
-                                                                                                                            onPressed: () async {
-                                                                                                                              setState(() {
-                                                                                                                                _itemCount[index]--;
-                                                                                                                                _itemCountBeli[index]--;
-                                                                                                                                itemIndex--;
-                                                                                                                                jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                                jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
-                                                                                                                                print(jumlahHargaItem[index]);
-                                                                                                                                print(jumlahHargaBeliItem[index]);
-                                                                                                                              });
-                                                                                                                            })
-                                                                                                                        : IconButton(
-                                                                                                                            icon: Icon(Icons.remove),
-                                                                                                                            onPressed: null,
-                                                                                                                          ),
-                                                                                                                    new Text(
-                                                                                                                      _itemCount[index].toString(),
-                                                                                                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                    ),
-                                                                                                                    new IconButton(
-                                                                                                                        icon: Icon(Icons.add),
-                                                                                                                        onPressed: () async {
-                                                                                                                          setState(() {
-                                                                                                                            _itemCount[index]++;
-                                                                                                                            _itemCountBeli[index]++;
-                                                                                                                            itemIndex++;
-                                                                                                                            jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                            jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
-                                                                                                                            print(jumlahHargaItem[index]);
-                                                                                                                            print(jumlahHargaBeliItem[index]);
-                                                                                                                          });
-                                                                                                                        }),
-                                                                                                                  ],
-                                                                                                                ),
-                                                                                                              )
-                                                                                                            ],
-                                                                                                          ),
-                                                                                                        ),
-                                                                                                      )
-                                                                                                    ],
-                                                                                                  ),
-                                                                                                ),
-                                                                                                Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                                ButtonBar(
-                                                                                                  alignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    btnTambah(context, snapshot.data[index], index),
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ],
-                                                                                            )
-                                                                                          ],
-                                                                                        );
-                                                                                      });
-                                                                                    });
-                                                                              }),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else if (x
-                                                                      .nama
-                                                                      .toString()
-                                                                      .toLowerCase()
-                                                                      .contains(
-                                                                          searchText
-                                                                              .toLowerCase())) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[index] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () async {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[index]--;
-                                                                                                                              _itemCountBeli[index]--;
-
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                              jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[index].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[index]++;
-                                                                                                                          _itemCountBeli[index]++;
-
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[index] = int.parse(x.hargaJual) * _itemCount[index];
-                                                                                                                          jumlahHargaBeliItem[index] = int.parse(x.hargaBeli) * _itemCountBeli[index];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], index),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          )
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else {
-                                                                    return Container();
-                                                                  }
-                                                                })
-                                                            : Center(
-                                                                child:
-                                                                    CircularProgressIndicator());
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Stack(
-                                          alignment: Alignment.bottomCenter,
-                                          children: [
-                                            Container(
-                                              child: Stack(
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.all(10),
-                                                    child: FutureBuilder(
-                                                      future: SQFliteBarang.sql
-                                                          .getBarangFromJenis(),
-                                                      builder:
-                                                          (BuildContext context,
-                                                              AsyncSnapshot
-                                                                  snapshot) {
-                                                        return snapshot.hasData
-                                                            ? ListView.builder(
-                                                                itemCount:
-                                                                    snapshot
-                                                                        .data
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (BuildContext
-                                                                            context,
-                                                                        index) {
-                                                                  final x = snapshot
-                                                                          .data[
-                                                                      index];
-                                                                  if (searchText
-                                                                      .isEmpty) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title: Text(
-                                                                                // "",
-                                                                                '${x.nama}',
-                                                                                style: TextStyle(
-                                                                                  color: Colors.indigo.shade600,
-                                                                                  fontSize: 14,
-                                                                                )),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[_itemCount.length - 1] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[_itemCount.length - 1]--;
-                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
-
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[_itemCount.length - 1]++;
-                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
-
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          ),
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else if (x
-                                                                      .nama
-                                                                      .toString()
-                                                                      .toLowerCase()
-                                                                      .contains(
-                                                                          searchText
-                                                                              .toLowerCase())) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[_itemCount.length - 1] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () async {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[_itemCount.length - 1]--;
-                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[_itemCount.length - 1]++;
-                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          )
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else {
-                                                                    return Container();
-                                                                  }
-                                                                },
-                                                              )
-                                                            : Center(
-                                                                child:
-                                                                    CircularProgressIndicator());
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Stack(
-                                          alignment: Alignment.bottomCenter,
-                                          children: [
-                                            Container(
-                                              child: Stack(
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.all(10),
-                                                    child: FutureBuilder(
-                                                      future: SQFliteBarang.sql
-                                                          .getBarangFromJenis3(),
-                                                      builder:
-                                                          (BuildContext context,
-                                                              AsyncSnapshot
-                                                                  snapshot) {
-                                                        return snapshot.hasData
-                                                            ? ListView.builder(
-                                                                itemCount:
-                                                                    snapshot
-                                                                        .data
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (BuildContext
-                                                                            context,
-                                                                        index) {
-                                                                  final x = snapshot
-                                                                          .data[
-                                                                      index];
-                                                                  if (searchText
-                                                                      .isEmpty) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[_itemCount.length - 1] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[_itemCount.length - 1]--;
-                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
-
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[_itemCount.length - 1]++;
-                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
-
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          ),
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else if (x
-                                                                      .nama
-                                                                      .toString()
-                                                                      .toLowerCase()
-                                                                      .contains(
-                                                                          searchText
-                                                                              .toLowerCase())) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[_itemCount.length - 1] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () async {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[_itemCount.length - 1]--;
-                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[_itemCount.length - 1]++;
-                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          )
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else {
-                                                                    return Container();
-                                                                  }
-                                                                },
-                                                              )
-                                                            : Center(
-                                                                child:
-                                                                    CircularProgressIndicator());
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Stack(
-                                          alignment: Alignment.bottomCenter,
-                                          children: [
-                                            Container(
-                                              child: Stack(
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.all(10),
-                                                    child: FutureBuilder(
-                                                      future: SQFliteBarang.sql
-                                                          .getBarangFromJenis4(),
-                                                      builder:
-                                                          (BuildContext context,
-                                                              AsyncSnapshot
-                                                                  snapshot) {
-                                                        return snapshot.hasData
-                                                            ? ListView.builder(
-                                                                itemCount:
-                                                                    snapshot
-                                                                        .data
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (BuildContext
-                                                                            context,
-                                                                        index) {
-                                                                  final x = snapshot
-                                                                          .data[
-                                                                      index];
-                                                                  if (searchText
-                                                                      .isEmpty) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[_itemCount.length - 1] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[_itemCount.length - 1]--;
-                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
-
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[_itemCount.length - 1]++;
-                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
-
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          ),
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else if (x
-                                                                      .nama
-                                                                      .toString()
-                                                                      .toLowerCase()
-                                                                      .contains(
-                                                                          searchText
-                                                                              .toLowerCase())) {
-                                                                    for (int i =
-                                                                            0;
-                                                                        i < snapshot.data.length;
-                                                                        i++) {
-                                                                      _itemCount
-                                                                          .add(
-                                                                              0);
-                                                                      jumlahHargaItem
-                                                                          .add(
-                                                                              0);
-                                                                      for (int i =
-                                                                              0;
-                                                                          i < snapshot.data.length;
-                                                                          i++) {
-                                                                        _itemCountBeli
-                                                                            .add(0);
-                                                                        jumlahHargaBeliItem
-                                                                            .add(0);
-                                                                      }
-                                                                    }
-                                                                    return SingleChildScrollView(
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          ListTile(
-                                                                            leading:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(5.0),
-                                                                              child: Image.network(
-                                                                                "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                height: 100,
-                                                                                width: 60,
-                                                                              ),
-                                                                            ),
-                                                                            title:
-                                                                                Text(
-                                                                              // "",
-                                                                              '${x.nama}',
-                                                                              style: TextStyle(color: Colors.indigo.shade600),
-                                                                            ),
-                                                                            trailing:
-                                                                                Text(
-                                                                              "Harga : " + rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                                                            ),
-                                                                            onTap:
-                                                                                () {
-                                                                              showDialog(
-                                                                                  context: context,
-                                                                                  builder: (BuildContext context) {
-                                                                                    return StatefulBuilder(builder: (context, setState) {
-                                                                                      return AlertDialog(
-                                                                                        content: ListTile(
-                                                                                          isThreeLine: true,
-                                                                                          leading: Image.network(
-                                                                                            "${BaseUrl.pathImage}/${x.gambar}",
-                                                                                          ),
-                                                                                          title: Text(
-                                                                                            '${x.nama}',
-                                                                                            style: TextStyle(color: Colors.indigo.shade600),
-                                                                                          ),
-                                                                                          subtitle: Text(
-                                                                                            rupiah('${x.hargaJual}', trailing: '.00'),
-                                                                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                          ),
-                                                                                        ),
-                                                                                        actions: [
-                                                                                          Column(
-                                                                                            children: [
-                                                                                              Container(
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                  children: [
-                                                                                                    Card(
-                                                                                                      child: Container(
-                                                                                                        height: 50,
-                                                                                                        width: 120,
-                                                                                                        child: Row(
-                                                                                                          children: [
-                                                                                                            Container(
-                                                                                                              alignment: Alignment.center,
-                                                                                                              child: Row(
-                                                                                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                                                                children: [
-                                                                                                                  Padding(
-                                                                                                                    padding: EdgeInsets.only(right: 5),
-                                                                                                                  ),
-                                                                                                                  _itemCount[_itemCount.length - 1] != 0
-                                                                                                                      ? new IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: () async {
-                                                                                                                            setState(() {
-                                                                                                                              _itemCount[_itemCount.length - 1]--;
-                                                                                                                              _itemCountBeli[_itemCount.length - 1]--;
-                                                                                                                              itemIndex--;
-                                                                                                                              jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                              jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                            });
-                                                                                                                          })
-                                                                                                                      : IconButton(
-                                                                                                                          icon: Icon(Icons.remove),
-                                                                                                                          onPressed: null,
-                                                                                                                        ),
-                                                                                                                  new Text(
-                                                                                                                    _itemCount[_itemCount.length - 1].toString(),
-                                                                                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                                                                                  ),
-                                                                                                                  new IconButton(
-                                                                                                                      icon: Icon(Icons.add),
-                                                                                                                      onPressed: () async {
-                                                                                                                        setState(() {
-                                                                                                                          _itemCount[_itemCount.length - 1]++;
-                                                                                                                          _itemCountBeli[_itemCount.length - 1]++;
-                                                                                                                          itemIndex++;
-                                                                                                                          jumlahHargaItem[_itemCount.length - 1] = int.parse(x.hargaJual) * _itemCount[_itemCount.length - 1];
-                                                                                                                          jumlahHargaBeliItem[_itemCount.length - 1] = int.parse(x.hargaBeli) * _itemCountBeli[_itemCount.length - 1];
-                                                                                                                        });
-                                                                                                                      }),
-                                                                                                                ],
-                                                                                                              ),
-                                                                                                            )
-                                                                                                          ],
-                                                                                                        ),
-                                                                                                      ),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              Padding(padding: EdgeInsets.only(top: 10)),
-                                                                                              ButtonBar(
-                                                                                                alignment: MainAxisAlignment.center,
-                                                                                                children: [
-                                                                                                  btnTambah(context, snapshot.data[index], _itemCount.length - 1),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ],
-                                                                                          )
-                                                                                        ],
-                                                                                      );
-                                                                                    });
-                                                                                  });
-                                                                            },
-                                                                          ),
-                                                                          Padding(
-                                                                              padding: EdgeInsets.only(top: 10)),
-                                                                          Divider(
-                                                                            thickness:
-                                                                                2,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  } else {
-                                                                    return Container();
-                                                                  }
-                                                                },
-                                                              )
-                                                            : Center(
-                                                                child:
-                                                                    CircularProgressIndicator());
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                  return SingleChildScrollView(
+                    physics: NeverScrollableScrollPhysics(),
+                    child: DefaultTabController(
+                      length: snapshot.data.length,
+                      child: Column(
+                        children: [
+                          TabBar(
+                            labelPadding:
+                                EdgeInsets.symmetric(horizontal: 20.0),
+                            labelColor: Colors.black,
+                            isScrollable: true,
+                            tabs: tabs,
                           ),
-                        ),
-                      ],
+                          SingleChildScrollView(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
+                              children: [
+                                Container(
+                                  height: 550,
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Colors.white,
+                                              width: 0.5))),
+                                  child: Stack(
+                                    children: [
+                                      TabBarView(
+                                        children: [
+                                          new Stack(
+                                            children: [
+                                              Container(
+                                                child: Stack(
+                                                  children: [
+                                                    Padding(
+                                                        padding:
+                                                            EdgeInsets.all(10),
+                                                        child: searchText
+                                                                .isEmpty
+                                                            ? barangJenis1(
+                                                                context)
+                                                            : barangCrossSearch(
+                                                                context)),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Stack(
+                                            alignment: Alignment.bottomCenter,
+                                            children: [
+                                              Container(
+                                                child: Stack(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.all(10),
+                                                      child: searchText.isEmpty
+                                                          ? barangJenis2(
+                                                              context)
+                                                          : barangCrossSearch(
+                                                              context),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Stack(
+                                            alignment: Alignment.bottomCenter,
+                                            children: [
+                                              Container(
+                                                child: Stack(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.all(10),
+                                                      child: searchText.isEmpty
+                                                          ? barangJenis3(
+                                                              context)
+                                                          : barangCrossSearch(
+                                                              context),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Stack(
+                                            alignment: Alignment.bottomCenter,
+                                            children: [
+                                              Container(
+                                                child: Stack(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.all(10),
+                                                      child: searchText.isEmpty
+                                                          ? barangJenis4(
+                                                              context)
+                                                          : barangCrossSearch(
+                                                              context),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
@@ -2266,72 +3119,83 @@ class _MenuKasirState extends State<MenuKasir> {
     }
   }
 
-  // Future penjualanList() async {
-  //   list = await SQFliteBarang.sql.getPenjualan();
-  //   setState(() {});
-  // }
-
-  // Future penjualanDetailList() async {
-  //   list = await SQFliteBarang.sql.getPenjualanDetail();
-  //   setState(() {});
-  // }
-
   Future syncPenjualan() async {
-    await SyncToAPI().fetchAllPenjualan().then((penjualanList) async {
-      await SyncToAPI().syncPenjualanToAPI(penjualanList);
-    });
+    var penjualan = await SyncToAPI().fetchAllPenjualan();
+    var penjualanDetail = await SyncToAPI().fetchJoinPenjualanDetail(penjualan);
+    await SyncToAPI().syncPenjualanToAPI(penjualan, penjualanDetail);
   }
-
-  Future syncPenjualanDetail() async {
-    await SyncToAPI()
-        .fetchAllPenjualanDetail()
-        .then((penjualanDetailList) async {
-      await SyncToAPI().syncPenjualanDetailToAPI(penjualanDetailList);
-    });
-  }
-
-  // toastSyncPenjualan() {
-  //   Fluttertoast.showToast(
-  //       msg: '$message',
-  //       toastLength: Toast.LENGTH_SHORT,
-  //       gravity: ToastGravity.CENTER,
-  //       timeInSecForIosWeb: 1,
-  //       fontSize: 12.0);
-  // }
 
   syncAlert() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-              title: Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
-                size: 50,
-              ),
-              content: Text(
-                "Status Sinkron : $message",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14),
-              ),
-              actions: [
-                Center(
-                  child: TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text('OK'),
-                      style: ButtonStyle(
-                          shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20))),
-                          foregroundColor:
-                              MaterialStateProperty.all(Colors.white),
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.grey),
-                          fixedSize: MaterialStateProperty.all(Size(100, 30)))),
+    if (message != 'Null' || message != 'Valid' || message != 'Duplicated') {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+                title: Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.green,
+                  size: 50,
                 ),
-              ]);
-        });
+                content: Text(
+                  "Sinkronisasi Berhasil",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14),
+                ),
+                actions: [
+                  Center(
+                    child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK'),
+                        style: ButtonStyle(
+                            shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20))),
+                            foregroundColor:
+                                MaterialStateProperty.all(Colors.white),
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.grey),
+                            fixedSize:
+                                MaterialStateProperty.all(Size(100, 30)))),
+                  ),
+                ]);
+          });
+    } else {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+                title: Icon(
+                  Icons.error_outline_outlined,
+                  color: Colors.red,
+                  size: 50,
+                ),
+                content: Text(
+                  "Data Kosong!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14),
+                ),
+                actions: [
+                  Center(
+                    child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK'),
+                        style: ButtonStyle(
+                            shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20))),
+                            foregroundColor:
+                                MaterialStateProperty.all(Colors.white),
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.grey),
+                            fixedSize:
+                                MaterialStateProperty.all(Size(100, 30)))),
+                  ),
+                ]);
+          });
+    }
   }
 }

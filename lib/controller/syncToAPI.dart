@@ -26,15 +26,13 @@ class SyncToAPI {
     tokenID = token;
   }
 
-  List<PenjualanDetail> detailPenjualan = [];
-  Map<String, dynamic> item = {};
-  List<Map> data = [];
-  List<Map<String, dynamic>> listItemDetail = [];
+  List itemList = [];
+  List<Map> dataList = [];
+  List<Map<String, dynamic>> listPenjualan = [];
   List<Map<dynamic, dynamic>> listSaveItem = [];
   List<Map<String, dynamic>> savedlist = [];
 
-  Future syncPenjualanToAPI(List<Penjualan> penjualan) async {
-    List<Map> item = data;
+  Future syncPenjualanToAPI(penjualan, penjualanDetail) async {
     for (var i = 0; i < penjualan.length; i++) {
       Map<String, dynamic> dataSync = {
         "IDTr": penjualan[i].iDTr.toString(),
@@ -47,19 +45,23 @@ class SyncToAPI {
         'NominalBeli': penjualan[i].nominalBeli.toString(),
         'Bayar': penjualan[i].bayar.toString(),
         'Kembalian': penjualan[i].kembalian.toString(),
-
-        // 'Sinkron': penjualan[i].sinkron.toString(),
+        'Item': [
+          for (var j = 0; j < penjualanDetail.length; j++)
+            if (penjualanDetail[j].iDTr == penjualan[i].iDTr)
+              {
+                "IDBarang": penjualanDetail[j].iDBarang.toString(),
+                "Kuantiti": penjualanDetail[j].kuantiti.toString(),
+                "HargaJual": penjualanDetail[j].hargaJual.toString(),
+                "HargaBeli": penjualanDetail[j].hargaBeli.toString(),
+                "DiskonSatuan": penjualanDetail[j].diskonSatuan.toString(),
+              }
+        ]
       };
 
-      final response = await Dio().post(BaseUrl.sinkronisasiPenjualan, data: {
-        'token': tokenID,
-        'data': [
-          dataSync,
-          {
-            'item': [listItemDetail]
-          }
-        ]
-      });
+      dataList.add(dataSync);
+
+      final response = await Dio().post(BaseUrl.sinkronisasiPenjualan,
+          data: {'token': tokenID, 'data': dataList});
 
       if (response.statusCode == 200) {
         var msg = response.data;
@@ -76,33 +78,17 @@ class SyncToAPI {
 
         print("pesan : $msg");
         print("pesan : $empty");
-        print("pesan : $status");
-        print('data item : $item');
-        print('data : $dataSync');
+        // print("pesan : $status");
+        // print('data item : $data');
+        print('data : $dataList');
         print('penjualan : ${penjualan.length}');
-        print('detailPenjualan : ${detailPenjualan.length}');
+        print('detailPenjualan : ${penjualanDetail.length}');
 
         print("Menyimpan Data...");
       } else {
         print(response.statusCode);
       }
     }
-    return data;
-  }
-
-  Future fetchDataPenjualan() async {
-    var db = await conn.database;
-    List userList = [];
-    try {
-      List<Map<String, dynamic>> maps =
-          await db.query('Penjualan', orderBy: 'IDTr');
-      for (var item in maps) {
-        userList.add(item);
-      }
-    } catch (e) {
-      print(e.toString());
-    }
-    return userList;
   }
 
   Future<List<Penjualan>> fetchAllPenjualan() async {
@@ -119,71 +105,40 @@ class SyncToAPI {
     return penjualanList;
   }
 
-  /* untuk sync PenjualanDetail */
-  /*========================== */
-
-  // List<Map<dynamic, dynamic>> savedlist = [];
-
-  Future syncPenjualanDetailToAPI(detailPenjualan) async {
-    for (var i = 0; i < detailPenjualan.length; i++) {
-      item = {
-        // 'IDTr': detailPenjualan[i].iDTr.toString(),
-        "IDBarang": detailPenjualan[i].iDBarang.toString(),
-        "Kuantiti": detailPenjualan[i].kuantiti.toString(),
-        "HargaJual": detailPenjualan[i].hargaJual.toString(),
-        "HargaBeli": detailPenjualan[i].hargaBeli.toString(),
-        'DiskonSatuan': detailPenjualan[i].diskonSatuan.toString(),
-      };
-
-      data.add(item);
-      // await Dio().post(BaseUrl.sinkronisasiPenjualan, data: {
-      //   'token': tokenID,
-      //   'data': [
-      //     {
-      //       'item': [listItemDetail]
-      //     }
-      //   ]
-      // });
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      List<String>? itemList = prefs.getStringList('listItem');
-      if (itemList == null) itemList = [];
-      itemList.add(jsonEncode(savedlist));
-      prefs.setStringList('listItem', itemList);
-
-      print("pesan : $item");
-      print(data);
-      print(detailPenjualan.length);
-    }
-
-    return data;
-  }
-
-  Future fetchDataPenjualanDetail() async {
-    var db = await conn.database;
-    List userList = [];
-    try {
-      List<Map<String, dynamic>> maps =
-          await db.query('PenjualanDetail', orderBy: 'IDTr');
-      for (var item in maps) {
-        userList.add(item);
-      }
-    } catch (e) {
-      print(e.toString());
-    }
-    return userList;
-  }
-
   Future<List<PenjualanDetail>> fetchAllPenjualanDetail() async {
     final db = await conn.database;
     List<PenjualanDetail> penjualanDetailList = [];
     try {
-      final maps = await db.query('PenjualanDetail');
+      final maps = await db.rawQuery(
+          'SELECT PenjualanDetail.IDTr, PenjualanDetail.IDBarang, PenjualanDetail.Kuantiti, PenjualanDetail.HargaBeli, PenjualanDetail.DiskonSatuan FROM PenjualanDetail INNER JOIN Penjualan ON PenjualanDetail.IDTr = Penjualan.IDTr WHERE PenjualanDetail.IDTr = Penjualan.IDTr ORDER BY PenjualanDetail.IDTr ASC');
       for (var item in maps) {
         penjualanDetailList.add(PenjualanDetail.fromJson(item));
       }
     } catch (e) {
       print(e.toString());
+    }
+    return penjualanDetailList;
+  }
+
+  var maps;
+
+  Future<List<PenjualanDetail>?> fetchJoinPenjualanDetail(penjualan) async {
+    final db = await conn.database;
+    var idtr;
+    List<PenjualanDetail> penjualanDetailList = [];
+
+    for (var i = 0; i < penjualan.length; i++) {
+      idtr = penjualan[i].iDTr;
+      print('item : $idtr');
+
+      maps = await db.query('PenjualanDetail',
+          where: 'IDTr = ${penjualan[i].iDTr}');
+      print(maps);
+
+      for (var item = 0; item < maps.length; item++) {
+        penjualanDetailList.add(PenjualanDetail.fromJson(maps[item]));
+        print(maps);
+      }
     }
     return penjualanDetailList;
   }

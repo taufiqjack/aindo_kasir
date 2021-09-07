@@ -31,7 +31,11 @@ class SQFliteBarang {
       await db.execute(
           'CREATE TRIGGER IF NOT EXISTS NomorTr AFTER INSERT ON Penjualan BEGIN UPDATE Penjualan SET NomorTr = NomorTr || new.IDTr WHERE IDTr = new.IDTr; END');
       await db.execute(
-          'create table PenjualanDetail( IDTr INTEGER PRIMARY KEY AUTOINCREMENT, IDBarang INTEGER, Kuantiti INTEGER, HargaJual INTEGER, HargaBeli INTEGER, DiskonSatuan INTEGER)');
+          // 'create table PenjualanDetail(IDDetail INTEGER PRIMARY KEY AUTOINCREMENT, IDTr TEXT, IDBarang INTEGER, Kuantiti INTEGER, HargaJual INTEGER, HargaBeli INTEGER, DiskonSatuan INTEGER, FOREIGN KEY (IDTr) REFERENCES Penjualan (IDTr) )');
+          'create table PenjualanDetail(IDTr INTEGER, Nama TEXT, IDBarang INTEGER, Kuantiti INTEGER, HargaJual INTEGER, HargaBeli INTEGER, DiskonSatuan INTEGER, FOREIGN KEY(IDTr) REFERENCES Penjualan(IDTr) )');
+      await db.execute('PRAGMA foreign_keys = ON');
+      //     // 'CREATE TRIGGER IF NOT EXISTS IDTr AFTER INSERT ON PenjualanDetail BEGIN UPDATE PenjualanDetail SET IDTr = IDTr || Penjualan.IDTr WHERE Penjualan.IDTr = PEnjualan.IDTr; END');
+      //     'CREATE TRIGGER IF NOT EXISTS IDTr AFTER INSERT ON PenjualanDetail BEGIN UPDATE PenjualanDetail SET IDTr = (SELECT Penjualan.IDTr FROM Penjualan WHERE Penjualan.IDTr = PenjualanDetail.IDTr) WHERE IDDetail = new.IDDetail AND IDTr = new.IDTr; END');
     });
   }
 
@@ -100,6 +104,17 @@ class SQFliteBarang {
     Database db = await database;
 
     var allData = await db.rawQuery('SELECT * FROM Barang WHERE Jenis LIKE 4');
+    List<Barang> list = allData.isNotEmpty
+        ? allData.map((e) => Barang.fromJson(e)).toList()
+        : [];
+
+    return list;
+  }
+
+  Future<List<Barang>> getAllBarang() async {
+    Database db = await database;
+
+    var allData = await db.rawQuery('SELECT * FROM Barang');
     List<Barang> list = allData.isNotEmpty
         ? allData.map((e) => Barang.fromJson(e)).toList()
         : [];
@@ -212,14 +227,15 @@ class SQFliteBarang {
 
   insertPenjualanDetail(PenjualanDetail model) async {
     var row = {
+      // 'IDDetail': model.iDDetail,
       'IDTr': model.iDTr,
+      'Nama': model.nama,
       'IDBarang': model.iDBarang,
       'Kuantiti': model.kuantiti,
       'HargaJual': model.hargaJual,
       'HargaBeli': model.hargaBeli,
       'DiskonSatuan': model.diskonSatuan,
     };
-
     final db = await database;
     final create = await db.insert('PenjualanDetail', row,
         conflictAlgorithm: ConflictAlgorithm.replace);
@@ -233,10 +249,30 @@ class SQFliteBarang {
     return del;
   }
 
+  getIDPenjualan() async {
+    final db = await database;
+    var data = await db
+        .rawQuery('SELECT IDTr from Penjualan ORDER BY IDTr DESC LIMIT 1');
+
+    return data;
+  }
+
   Future<List<PenjualanDetail>> getPenjualanDetail() async {
     Database db = await database;
 
     var allData = await db.rawQuery('SELECT * FROM PenjualanDetail');
+    List<PenjualanDetail> list = allData.isNotEmpty
+        ? allData.map((e) => PenjualanDetail.fromJson(e)).toList()
+        : [];
+
+    return list;
+  }
+
+  Future<List<PenjualanDetail>> getJoinPenjualanDetail(String idtr) async {
+    Database db = await database;
+
+    var allData = await db
+        .rawQuery('SELECT * FROM PenjualanDetail WHERE IDTr=?', ['$idtr']);
     List<PenjualanDetail> list = allData.isNotEmpty
         ? allData.map((e) => PenjualanDetail.fromJson(e)).toList()
         : [];
