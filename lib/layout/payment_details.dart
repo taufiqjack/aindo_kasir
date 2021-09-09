@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_files_and_screenshot_widgets_plus/share_files_and_screenshot_widgets_plus.dart';
 import 'package:tanggal_indonesia/tanggal_indonesia.dart';
 import 'package:intl/intl.dart';
 import 'package:take_screenshot/take_screenshot.dart';
@@ -27,6 +28,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
   final TakeScreenshotController takeScreenshotController =
       TakeScreenshotController();
   final GlobalKey _globalKey = GlobalKey();
+  int originalSize = 800;
 
   final f = new DateFormat('dd-MM-yyyy HH:mm:ss');
 
@@ -79,15 +81,15 @@ class _PaymentDetailsState extends State<PaymentDetails> {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(15),
-        child: Center(
-          child: TakeScreenshot(
-            controller: takeScreenshotController,
+      body: WillPopScope(
+        onWillPop: backPress,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(15),
+          child: Center(
             child: RepaintBoundary(
               key: _globalKey,
               child: Container(
-                height: 400,
+                height: 500,
                 width: 360,
                 color: Colors.white,
                 child: Stack(
@@ -132,7 +134,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 50),
                                 child: Text(
-                                  '08123456789',
+                                  '(031) 505-2747',
                                   style: TextStyle(fontSize: 12),
                                 ),
                               ),
@@ -148,7 +150,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                         width: 500,
                         child: Padding(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 30, vertical: 1),
+                              EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                           child: FutureBuilder(
                             future: SQFliteBarang.sql.getPenjualanByLatest(),
                             builder:
@@ -175,39 +177,36 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                     Padding(
                       padding: EdgeInsets.symmetric(vertical: 150),
                       child: Container(
-                        height: 4000,
+                        height: 200,
                         width: 500,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
                             Padding(
-                              padding: EdgeInsets.fromLTRB(30, 5, 10, 10),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
                               child: ListView.builder(
                                   physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
+                                  // shrinkWrap: true,
                                   itemCount: listSaveOrder.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     final barangData = listSaveOrder[index];
                                     return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text('${barangData['Nama']}'),
-                                        Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 4)),
-                                        Text('${barangData['quantity']}'),
-                                        Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 4)),
+                                        Text('x ${barangData['quantity']}'),
                                         Text(rupiah(
                                             '@${barangData['hargaJual']}')),
-                                        Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 4)),
-                                        Text(rupiah(int.parse(
-                                                '${barangData['quantity']}') *
-                                            int.parse(
-                                                barangData['hargaJual']))),
+                                        Text(
+                                          rupiah(int.parse(
+                                                  '${barangData['quantity']}') *
+                                              int.parse(
+                                                  barangData['hargaJual'])),
+                                          textAlign: TextAlign.right,
+                                        ),
                                       ],
                                     );
                                   }),
@@ -217,21 +216,22 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 245),
+                      padding: EdgeInsets.only(top: 350),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 30),
+                        padding: EdgeInsets.symmetric(horizontal: 20),
                         child: Divider(
                           thickness: 3,
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 260),
+                      padding: EdgeInsets.only(top: 365),
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(30, 2, 10, 10),
+                        padding: EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
                           children: [
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'Total',
@@ -240,19 +240,20 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 73),
-                                ),
-                                Text(
-                                  '${rupiah(jumlahHarga)}',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '${rupiah(jumlahHarga)}',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'Tunai',
@@ -260,9 +261,6 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 70),
                                 ),
                                 Text(
                                   '${rupiah(tunai)}',
@@ -274,6 +272,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                               ],
                             ),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'Kembali',
@@ -281,9 +280,6 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 60),
                                 ),
                                 Text(
                                   '${rupiah(kembali)}',
@@ -299,7 +295,7 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                       ),
                     ),
                     Padding(
-                        padding: EdgeInsets.only(top: 320),
+                        padding: EdgeInsets.only(top: 440),
                         child: Stack(
                           alignment: Alignment.bottomCenter,
                           children: [
@@ -345,12 +341,14 @@ class _PaymentDetailsState extends State<PaymentDetails> {
                 onPressed: () async {
                   requestPermission();
                   Future.delayed(Duration(seconds: 2), () async {
-                    try {
-                      await takeScreenshotController.captureAndShare(
-                          pixelRatio: 50);
-                    } on Exception catch (e) {
-                      print(e);
-                    }
+                    ShareFilesAndScreenshotWidgets().shareScreenshot(
+                        _globalKey,
+                        originalSize,
+                        'ShareSocialMedia',
+                        'aindo.png',
+                        'image/png',
+                        text: 'dibagikan dari AindoKasir');
+
                     saveToGallery();
                   });
                 },
@@ -409,6 +407,12 @@ class _PaymentDetailsState extends State<PaymentDetails> {
   toastInfo(String info) {
     Fluttertoast.showToast(
         msg: 'Gambar Tersimpan', toastLength: Toast.LENGTH_LONG);
+  }
+
+  Future<bool> backPress() async {
+    Navigator.push(context,
+        PageTransition(type: PageTransitionType.fade, child: MenuKasir()));
+    return false;
   }
 
   @override
