@@ -1,10 +1,10 @@
 import 'dart:convert';
-
 import 'package:aindo_kasir/database/SQFLite.dart';
 import 'package:aindo_kasir/layout/menu.dart';
 import 'package:aindo_kasir/layout/payment_details.dart';
 import 'package:aindo_kasir/models/api.dart';
 import 'package:aindo_kasir/models/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:page_transition/page_transition.dart';
@@ -29,12 +29,14 @@ class _OrderPagesState extends State<OrderPages> {
   final kembalianController = TextEditingController();
   String hasilText = '0';
   final f = new DateFormat('yyyyMMdd');
+  int? idtr;
+  Null iddet;
 
   final GlobalKey<FormState> formKey = GlobalKey();
 
   Future insertOrder() async {
     var data = {
-      'IDTr': null,
+      // 'IDTr': idtr,
       'NomorTr': f.format(DateTime.now()).toString() + '0000',
       'TanggalJual': DateTime.now().toString(),
       'Diskon': 0.0,
@@ -47,12 +49,14 @@ class _OrderPagesState extends State<OrderPages> {
       'Sinkron': 0
     };
 
-    return SQFliteBarang.sql.insertPenjualan(Penjualan.fromJson(data));
+    SQFliteBarang.sql.insertPenjualan(Penjualan.fromJson(data));
+    return data;
   }
 
   Future insertOrderPenjualanDetail(PenjualanDetail penjualanDetail) async {
     var data = {
-      'IDTr': penjualanDetail.iDTr,
+      'IDTr': listPenjualan.last.iDTr,
+      'Nama': penjualanDetail.nama,
       'IDBarang': penjualanDetail.iDBarang,
       'Kuantiti': penjualanDetail.kuantiti,
       'HargaJual': penjualanDetail.hargaJual,
@@ -60,8 +64,8 @@ class _OrderPagesState extends State<OrderPages> {
       'DiskonSatuan': penjualanDetail.diskonSatuan,
     };
 
-    return SQFliteBarang.sql
-        .insertPenjualanDetail(PenjualanDetail.fromJson(data));
+    SQFliteBarang.sql.insertPenjualanDetail(PenjualanDetail.fromJson(data));
+    return data;
     // ignore: dead_code
     print('menambah $data');
   }
@@ -131,95 +135,105 @@ class _OrderPagesState extends State<OrderPages> {
           },
         ),
       ),
-      body: ListView.builder(
-          itemCount: listSaveOrder.length,
-          itemBuilder: (BuildContext context, int index) {
-            final barangData = listSaveOrder[index];
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Image.network(
-                      "${BaseUrl.pathImage}/${barangData['Gambar']}",
-                    ),
-                    title: Text(
-                      '${barangData['Nama']}',
-                      style: TextStyle(color: Colors.indigo.shade600),
-                    ),
-                    subtitle: Text(
-                      '${barangData['quantity']} ' +
-                          'x ' +
-                          rupiah('${barangData['hargaJual']}'),
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                    trailing: FittedBox(
-                      fit: BoxFit.fill,
-                      alignment: Alignment.bottomCenter,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            rupiah(
-                              int.parse('${barangData['quantity']}') *
-                                  int.parse(barangData['hargaJual']),
+      body: WillPopScope(
+        onWillPop: backPress,
+        child: ListView.builder(
+            itemCount: listSaveOrder.length,
+            itemBuilder: (BuildContext context, int index) {
+              final barangData = listSaveOrder[index];
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: CachedNetworkImage(
+                        imageUrl:
+                            "${BaseUrl.pathImage}/${barangData['Gambar']}",
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) =>
+                                CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
+                      title: Text(
+                        '${barangData['Nama']}',
+                        style: TextStyle(color: Colors.indigo.shade600),
+                      ),
+                      subtitle: Text(
+                        '${barangData['quantity']} ' +
+                            'x ' +
+                            rupiah('${barangData['hargaJual']}'),
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      trailing: FittedBox(
+                        fit: BoxFit.fill,
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              rupiah(
+                                int.parse('${barangData['quantity']}') *
+                                    int.parse(barangData['hargaJual']),
+                              ),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          TextButton(
-                              onPressed: () async {
-                                var total = jumlahHargaScan;
-                                var totalBeli = totalHargaBeli;
-                                var hargaList =
-                                    int.parse('${barangData['quantity']}') *
-                                        int.parse(barangData['hargaJual']);
-                                var hargaBeliList =
-                                    int.parse('${barangData['quantity']}') *
-                                        int.parse(barangData['hargaBeli']);
+                            TextButton(
+                                onPressed: () async {
+                                  var total = jumlahHargaScan;
+                                  var totalBeli = totalHargaBeli;
+                                  var hargaList =
+                                      int.parse('${barangData['quantity']}') *
+                                          int.parse(barangData['hargaJual']);
+                                  var hargaBeliList =
+                                      int.parse('${barangData['quantity']}') *
+                                          int.parse(barangData['hargaBeli']);
 
-                                setState(() {
-                                  listSaveOrder.removeAt(index);
-                                  jumlahHargaScan = 0;
-                                  jumlahHargaScan =
-                                      (int.parse(total.toString())) - hargaList;
-                                  totalHargaBeli = 0;
-                                  totalHargaBeli =
-                                      (int.parse(totalBeli.toString())) -
-                                          hargaBeliList;
+                                  setState(() {
+                                    listSaveOrder.removeAt(index);
+                                    jumlahHargaScan = 0;
+                                    jumlahHargaScan =
+                                        (int.parse(total.toString())) -
+                                            hargaList;
+                                    totalHargaBeli = 0;
+                                    totalHargaBeli =
+                                        (int.parse(totalBeli.toString())) -
+                                            hargaBeliList;
 
-                                  print(
-                                      'hasil : ${jumlahHargaScan.toString()}');
-                                });
-                              },
-                              child: Text('Batal'),
-                              style: ButtonStyle(
-                                  shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8))),
-                                  foregroundColor:
-                                      MaterialStateProperty.all(Colors.white),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Colors.redAccent),
-                                  fixedSize:
-                                      MaterialStateProperty.all(Size(5, 5)))),
-                        ],
+                                    print(
+                                        'hasil : ${jumlahHargaScan.toString()}');
+                                  });
+                                },
+                                child: Text('Batal'),
+                                style: ButtonStyle(
+                                    shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8))),
+                                    foregroundColor:
+                                        MaterialStateProperty.all(Colors.white),
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Colors.redAccent),
+                                    fixedSize:
+                                        MaterialStateProperty.all(Size(5, 5)))),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(padding: EdgeInsets.only(top: 10)),
-                  Divider(
-                    thickness: 2,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 10),
-                  ),
-                ],
-              ),
-            );
-          }),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Divider(
+                      thickness: 2,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 10),
+                    ),
+                  ],
+                ),
+              );
+            }),
+      ),
       bottomNavigationBar: Container(
         height: 120,
         width: 50,
@@ -268,27 +282,6 @@ class _OrderPagesState extends State<OrderPages> {
       return Center(
         child: TextButton(
           onPressed: () async {
-            for (int i = 0; i < listSaveOrder.length; i++) {
-              var barangData = listSaveOrder[i];
-              savedlistOrder['idBarang'] = barangData['idBarang'];
-              savedlistOrder['Gambar'] = barangData['Gambar'];
-              savedlistOrder['Nama'] = barangData['Nama'];
-              savedlistOrder['hargaJual'] = barangData['hargaJual'];
-              savedlistOrder['hargaBeli'] = barangData['hargaBeli'];
-              savedlistOrder['quantity'] = barangData['quantity'];
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              List<String>? newCart = prefs.getStringList('newCart');
-              String? cartJumlahHarga = prefs.getString('newJumlahHarga');
-              String? cartJumlahHargaBeli =
-                  prefs.getString('newJumlahHargaBeli');
-              cartJumlahHarga = jumlahHargaScan.toString();
-              cartJumlahHargaBeli = totalHargaBeli.toString();
-              if (newCart == null) newCart = [];
-              newCart.add(jsonEncode(savedlistOrder));
-              prefs.setStringList('newCart', newCart);
-              prefs.setString('newJumlahHarga', cartJumlahHarga);
-              prefs.setString('newJumlahHargaBeli', cartJumlahHargaBeli);
-            }
             // insertOrder();
             showDialog(
                 context: context,
@@ -335,9 +328,10 @@ class _OrderPagesState extends State<OrderPages> {
                                     if (value.toString() == '0' ||
                                         value.toString() == '00' ||
                                         value.toString().isEmpty) {
-                                      return 'nominal bayar harus diisi dan tidak boleh 0!';
-                                    }
-                                    return null;
+                                      return 'nominal bayar harus diisi, tidak boleh 0!';
+                                    } else if (int.parse(value.toString()) <
+                                        jumlahHargaScan!)
+                                      return 'nominal tidak boleh kurang dari total harga!';
                                   },
                                 ),
                                 Padding(padding: EdgeInsets.only(top: 20)),
@@ -386,37 +380,82 @@ class _OrderPagesState extends State<OrderPages> {
                                         for (int i = 0;
                                             i < listSaveOrder.length;
                                             i++) {
-                                          PenjualanDetail penjualanDetail =
-                                              new PenjualanDetail(
-                                            iDTr: null,
-                                            iDBarang: listSaveOrder[i]
-                                                ['idBarang'],
-                                            kuantiti: int.parse(
-                                                listSaveOrder[i]['quantity']),
-                                            hargaJual: int.parse(
-                                                listSaveOrder[i]['hargaJual']),
-                                            hargaBeli: int.parse(
-                                                listSaveOrder[i]['hargaBeli']),
-                                            diskonSatuan: 0,
-                                          );
-
+                                          var barangData = listSaveOrder[i];
+                                          savedlistOrder['idTr'] =
+                                              barangData['idTr'];
+                                          savedlistOrder['idBarang'] =
+                                              barangData['idBarang'];
+                                          savedlistOrder['Gambar'] =
+                                              barangData['Gambar'];
+                                          savedlistOrder['Nama'] =
+                                              barangData['Nama'];
+                                          savedlistOrder['hargaJual'] =
+                                              barangData['hargaJual'];
+                                          savedlistOrder['hargaBeli'] =
+                                              barangData['hargaBeli'];
+                                          savedlistOrder['quantity'] =
+                                              barangData['quantity'];
                                           SharedPreferences prefs =
                                               await SharedPreferences
                                                   .getInstance();
-                                          int? tunai = prefs.getInt('tunai');
-                                          tunai =
-                                              int.parse(nomBelController.text);
-                                          prefs.setInt('tunai', tunai);
-                                          int? kembali = prefs.getInt('tunai');
-                                          kembali = int.parse(hasilText);
-                                          prefs.setInt('kembali', kembali);
-
-                                          insertOrderPenjualanDetail(
-                                              penjualanDetail);
+                                          List<String>? newCart =
+                                              prefs.getStringList('newCart');
+                                          String? cartJumlahHarga =
+                                              prefs.getString('newJumlahHarga');
+                                          String? cartJumlahHargaBeli = prefs
+                                              .getString('newJumlahHargaBeli');
+                                          cartJumlahHarga =
+                                              jumlahHargaScan.toString();
+                                          cartJumlahHargaBeli =
+                                              totalHargaBeli.toString();
+                                          if (newCart == null) newCart = [];
+                                          newCart
+                                              .add(jsonEncode(savedlistOrder));
+                                          prefs.setStringList(
+                                              'newCart', newCart);
+                                          prefs.setString('newJumlahHarga',
+                                              cartJumlahHarga);
+                                          prefs.setString('newJumlahHargaBeli',
+                                              cartJumlahHargaBeli);
                                         }
+                                        getDataPenjualan();
 
-                                        Future.delayed(Duration(seconds: 3),
+                                        Future.delayed(Duration(seconds: 2),
                                             () async {
+                                          for (int i = 0;
+                                              i < listSaveOrder.length;
+                                              i++) {
+                                            PenjualanDetail penjualanDetail =
+                                                new PenjualanDetail(
+                                              nama: listSaveOrder[i]['Nama'],
+                                              iDBarang: listSaveOrder[i]
+                                                  ['idBarang'],
+                                              kuantiti: int.parse(
+                                                  listSaveOrder[i]['quantity']),
+                                              hargaJual: int.parse(
+                                                  listSaveOrder[i]
+                                                      ['hargaJual']),
+                                              hargaBeli: int.parse(
+                                                  listSaveOrder[i]
+                                                      ['hargaBeli']),
+                                              diskonSatuan: 0,
+                                            );
+
+                                            SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            int? tunai = prefs.getInt('tunai');
+                                            tunai = int.parse(
+                                                nomBelController.text);
+                                            prefs.setInt('tunai', tunai);
+                                            int? kembali =
+                                                prefs.getInt('tunai');
+                                            kembali = int.parse(hasilText);
+                                            prefs.setInt('kembali', kembali);
+
+                                            insertOrderPenjualanDetail(
+                                                penjualanDetail);
+                                          }
                                           Navigator.push(
                                               context,
                                               PageTransition(
@@ -480,6 +519,38 @@ class _OrderPagesState extends State<OrderPages> {
                     ),
                   ))));
     }
+  }
+
+  Future<bool> backPress() async {
+    Navigator.push(context,
+        PageTransition(type: PageTransitionType.fade, child: MenuKasir()));
+    return false;
+  }
+
+  List<Penjualan> listPenjualan = [];
+
+  getDataPenjualan() {
+    SQFliteBarang.sql.getPenjualan().then((value) {
+      setState(() {
+        value.forEach((data) {
+          listPenjualan.add(Penjualan(
+            iDTr: data.iDTr,
+            nomorTr: data.nomorTr,
+            tanggalJual: data.tanggalJual,
+            diskon: data.diskon,
+            diskonRp: data.diskonRp,
+            iDUser: data.iDUser,
+            nominalJual: data.nominalJual,
+            nominalBeli: data.nominalBeli,
+            bayar: data.bayar,
+            kembalian: data.kembalian,
+            sinkron: data.sinkron,
+          ));
+        });
+      });
+    }).catchError((error) {
+      print(error);
+    });
   }
 
   @override

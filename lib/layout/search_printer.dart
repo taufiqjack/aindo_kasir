@@ -10,7 +10,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
-import 'package:tanggal_indonesia/tanggal_indonesia.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,18 +21,23 @@ class SearchPrintPage extends StatefulWidget {
 }
 
 class _SearchPrintPageState extends State<SearchPrintPage> {
-  bool connected = false;
+  bool? connected = false;
   List availableBluetoothDevices = [];
 
   List<Penjualan> listBarang = [];
 
   List<Map<dynamic, dynamic>> listSaveOrder = [];
   String? jumlahHarga;
+  String? tunai;
+  String? kembali;
+  var moneyFormat = NumberFormat('#,000');
 
   getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final cart = prefs.getStringList('newCart')!;
     final cartJumlahHarga = prefs.getString('newJumlahHarga');
+    final jumlahTunai = prefs.getInt('tunai');
+    final jumlahKembalian = prefs.getInt('kembali');
     setState(() {
       cart.forEach((item) {
         listSaveOrder.add(jsonDecode(item));
@@ -41,6 +45,8 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
     });
     setState(() {
       jumlahHarga = cartJumlahHarga.toString();
+      tunai = jumlahTunai.toString();
+      kembali = jumlahKembalian.toString();
     });
   }
 
@@ -95,50 +101,64 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
           },
         ),
       ),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Bluetooth Yang Tersedia"),
-            TextButton(
-              onPressed: () {
-                requestBtPermission();
-                setState(() {
-                  this.getBluetooth();
-                });
-              },
-              child: Text("Cari Perangkat"),
-            ),
-            Container(
-              height: 200,
-              child: ListView.builder(
-                itemCount: availableBluetoothDevices.length > 0
-                    ? availableBluetoothDevices.length
-                    : 0,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    onTap: () {
-                      String select = availableBluetoothDevices[index];
-                      List list = select.split("#");
-                      // String name = list[0];
-                      String mac = list[1];
-                      this.setConnect(mac);
-                    },
-                    title: Text('${availableBluetoothDevices[index]}'),
-                    subtitle: Text("Click to connect"),
-                  );
-                },
-              ),
-            ),
-            SizedBox(
-              height: 30,
-            ),
-          ],
+      body: WillPopScope(
+        onWillPop: backPress,
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: connected == false
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Bluetooth Yang Tersedia"),
+                    TextButton(
+                        onPressed: () {
+                          requestBtPermission();
+                          setState(() {
+                            this.getBluetooth();
+                          });
+                        },
+                        child: Text("Cari Perangkat")),
+                    Container(
+                      height: 200,
+                      child: ListView.builder(
+                        itemCount: availableBluetoothDevices.length > 0
+                            ? availableBluetoothDevices.length
+                            : 0,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            onTap: () {
+                              String select = availableBluetoothDevices[index];
+                              List list = select.split("#");
+                              // String name = list[0];
+                              String mac = list[1];
+                              this.setConnect(mac);
+                            },
+                            title: Text('${availableBluetoothDevices[index]}'),
+                            subtitle: Text("Click to connect"),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                  ],
+                )
+              : Center(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Bluetooth Telah Terhubung'),
+                        Icon(
+                          Icons.done,
+                          color: Colors.lightGreen,
+                        )
+                      ]),
+                ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: connected ? this.printTicket : null,
+        onPressed: connected == true ? this.printTicket : printTicket,
         label: Text(
           'Print Nota',
           style: TextStyle(fontSize: 20),
@@ -211,7 +231,9 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       toastInfo();
       print("Print $result");
-    } else {}
+    } else if (isConnected == 'false') {
+      return;
+    }
   }
 
   Future<void> printGraphics() async {
@@ -220,8 +242,7 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
       List<int> bytes = await getGraphicsTicket();
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       print("Print $result");
-    } else {
-    }
+    } else {}
   }
 
   final idTime = new DateFormat('dd-MM-yyyy HH:mm:ss');
@@ -270,25 +291,25 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
             width: PosTextSize.size1));
 
     bytes += generator.hr();
-    bytes += generator.row([
-      PosColumn(
-          text: 'Item',
-          width: 4,
-          styles: PosStyles(
-              align: PosAlign.left, bold: true, height: PosTextSize.size1)),
-      PosColumn(
-          text: 'Qty',
-          width: 2,
-          styles: PosStyles(align: PosAlign.left, bold: true)),
-      PosColumn(
-          text: 'Harga',
-          width: 3,
-          styles: PosStyles(align: PosAlign.left, bold: true)),
-      PosColumn(
-          text: 'Total',
-          width: 3,
-          styles: PosStyles(align: PosAlign.left, bold: true)),
-    ]);
+    // bytes += generator.row([
+    //   PosColumn(
+    //       text: 'Item',
+    //       width: 4,
+    //       styles: PosStyles(
+    //           align: PosAlign.left, bold: true, height: PosTextSize.size1)),
+    //   PosColumn(
+    //       text: 'Qty',
+    //       width: 2,
+    //       styles: PosStyles(align: PosAlign.left, bold: true)),
+    //   PosColumn(
+    //       text: 'Harga',
+    //       width: 3,
+    //       styles: PosStyles(align: PosAlign.left, bold: true)),
+    //   PosColumn(
+    //       text: 'Total',
+    //       width: 3,
+    //       styles: PosStyles(align: PosAlign.left, bold: true)),
+    // ]);
 
     for (int i = 0; i < listSaveOrder.length; i++) {
       bytes += generator.row([
@@ -309,11 +330,12 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
             )),
         PosColumn(text: 'x', width: 2, styles: PosStyles(align: PosAlign.left)),
         PosColumn(
-            text: '@${rupiah(listSaveOrder[i]['hargaJual'])}',
+            text:
+                '${moneyFormat.format(int.parse(listSaveOrder[i]['hargaJual']))}',
             width: 4,
             styles: PosStyles(align: PosAlign.left)),
         PosColumn(
-            text: rupiah(int.parse(listSaveOrder[i]['quantity']) *
+            text: moneyFormat.format(int.parse(listSaveOrder[i]['quantity']) *
                 int.parse(listSaveOrder[i]['hargaJual'])),
             width: 4,
             styles: PosStyles(align: PosAlign.right)),
@@ -332,7 +354,7 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
             width: PosTextSize.size1,
           )),
       PosColumn(
-          text: '${rupiah(jumlahHarga)}',
+          text: '${moneyFormat.format(int.parse(jumlahHarga!))}',
           width: 4,
           styles: PosStyles(
             align: PosAlign.right,
@@ -350,7 +372,7 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
             width: PosTextSize.size1,
           )),
       PosColumn(
-          text: '${rupiah(listBarang.first.bayar)}',
+          text: '${moneyFormat.format(int.parse(tunai!))}',
           width: 4,
           styles: PosStyles(
             align: PosAlign.right,
@@ -369,7 +391,7 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
             width: PosTextSize.size1,
           )),
       PosColumn(
-          text: '${rupiah(listBarang.first.kembalian)}',
+          text: '${moneyFormat.format(int.parse(kembali!))}',
           width: 4,
           styles: PosStyles(
             align: PosAlign.right,
@@ -388,6 +410,12 @@ class _SearchPrintPageState extends State<SearchPrintPage> {
         styles: PosStyles(align: PosAlign.center, bold: false));
     bytes += generator.cut();
     return bytes;
+  }
+
+  Future<bool> backPress() async {
+    Navigator.push(context,
+        PageTransition(type: PageTransitionType.fade, child: PaymentDetails()));
+    return false;
   }
 
   requestBtPermission() async {

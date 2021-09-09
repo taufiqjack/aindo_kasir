@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tanggal_indonesia/tanggal_indonesia.dart';
 import 'package:aindo_kasir/controller/syncToLocal.dart';
 import 'package:animated_search_bar/animated_search_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MenuKasir extends StatefulWidget {
   MenuKasir({Key? key}) : super(key: key);
@@ -290,15 +291,20 @@ class _MenuKasirState extends State<MenuKasir> {
                 ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(5.0),
-                      child: Image.network(
-                        "${BaseUrl.pathImage}/${x.gambar}",
-                        //   Image.memory(
-                        // bytes!,
-                        // width: 100.0,
-                        // height: 60.0,
-                        // ),
-                        height: 100,
-                        width: 60,
+                      child:
+                          //   Image.network(
+                          //     "${BaseUrl.pathImage}/${x.gambar}",
+                          //     height: 100,
+                          //     width: 60,
+                          //   ),
+                          // ),
+                          CachedNetworkImage(
+                        imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) =>
+                                CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
                     ),
                     title: Text(
@@ -320,8 +326,15 @@ class _MenuKasirState extends State<MenuKasir> {
                               return AlertDialog(
                                 content: ListTile(
                                   isThreeLine: true,
-                                  leading: Image.network(
-                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  leading: CachedNetworkImage(
+                                    imageUrl:
+                                        "${BaseUrl.pathImage}/${x.gambar}",
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        CircularProgressIndicator(
+                                            value: downloadProgress.progress),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
                                   title: Text(
                                     '${x.nama}',
@@ -488,10 +501,14 @@ class _MenuKasirState extends State<MenuKasir> {
                     ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(5.0),
-                        child: Image.network(
-                          "${BaseUrl.pathImage}/${x.gambar}",
-                          height: 100,
-                          width: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                         ),
                       ),
                       title: Text(
@@ -513,8 +530,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                 return AlertDialog(
                                   content: ListTile(
                                     isThreeLine: true,
-                                    leading: Image.network(
-                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    leading: CachedNetworkImage(
+                                      imageUrl:
+                                          "${BaseUrl.pathImage}/${x.gambar}",
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
                                     ),
                                     title: Text(
                                       '${x.nama}',
@@ -680,17 +704,21 @@ class _MenuKasirState extends State<MenuKasir> {
                 ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(5.0),
-                      child: Image.network(
-                        "${BaseUrl.pathImage}/${x.gambar}",
-                        //   Image.memory(
-                        // bytes!,
-                        // width: 100.0,
-                        // height: 60.0,
-                        // ),
-                        height: 100,
-                        width: 60,
+                      child:
+                          // Image.network(
+                          //   "${BaseUrl.pathImage}/${x.gambar}",
+                          CachedNetworkImage(
+                        imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) =>
+                                CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
+                      // height: 100,
+                      // width: 60,
                     ),
+                    // ),
                     title: Text(
                       // "",
                       '${x.nama}',
@@ -710,8 +738,15 @@ class _MenuKasirState extends State<MenuKasir> {
                               return AlertDialog(
                                 content: ListTile(
                                   isThreeLine: true,
-                                  leading: Image.network(
-                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  leading: CachedNetworkImage(
+                                    imageUrl:
+                                        "${BaseUrl.pathImage}/${x.gambar}",
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        CircularProgressIndicator(
+                                            value: downloadProgress.progress),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
                                   title: Text(
                                     '${x.nama}',
@@ -900,10 +935,14 @@ class _MenuKasirState extends State<MenuKasir> {
                     ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(5.0),
-                        child: Image.network(
-                          "${BaseUrl.pathImage}/${x.gambar}",
-                          height: 100,
-                          width: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                         ),
                       ),
                       title: Text(
@@ -925,8 +964,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                 return AlertDialog(
                                   content: ListTile(
                                     isThreeLine: true,
-                                    leading: Image.network(
-                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    leading: CachedNetworkImage(
+                                      imageUrl:
+                                          "${BaseUrl.pathImage}/${x.gambar}",
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
                                     ),
                                     title: Text(
                                       '${x.nama}',
@@ -1105,17 +1151,21 @@ class _MenuKasirState extends State<MenuKasir> {
                 ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(5.0),
-                      child: Image.network(
-                        "${BaseUrl.pathImage}/${x.gambar}",
-                        //   Image.memory(
-                        // bytes!,
-                        // width: 100.0,
-                        // height: 60.0,
-                        // ),
-                        height: 100,
-                        width: 60,
+                      child:
+                          // Image.network(
+                          // "${BaseUrl.pathImage}/${x.gambar}",
+                          CachedNetworkImage(
+                        imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) =>
+                                CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
+                      // height: 100,
+                      // width: 60,
                     ),
+                    // ),
                     title: Text(
                       // "",
                       '${x.nama}',
@@ -1135,8 +1185,15 @@ class _MenuKasirState extends State<MenuKasir> {
                               return AlertDialog(
                                 content: ListTile(
                                   isThreeLine: true,
-                                  leading: Image.network(
-                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  leading: CachedNetworkImage(
+                                    imageUrl:
+                                        "${BaseUrl.pathImage}/${x.gambar}",
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        CircularProgressIndicator(
+                                            value: downloadProgress.progress),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
                                   title: Text(
                                     '${x.nama}',
@@ -1325,10 +1382,14 @@ class _MenuKasirState extends State<MenuKasir> {
                     ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(5.0),
-                        child: Image.network(
-                          "${BaseUrl.pathImage}/${x.gambar}",
-                          height: 100,
-                          width: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                         ),
                       ),
                       title: Text(
@@ -1350,8 +1411,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                 return AlertDialog(
                                   content: ListTile(
                                     isThreeLine: true,
-                                    leading: Image.network(
-                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    leading: CachedNetworkImage(
+                                      imageUrl:
+                                          "${BaseUrl.pathImage}/${x.gambar}",
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
                                     ),
                                     title: Text(
                                       '${x.nama}',
@@ -1530,16 +1598,20 @@ class _MenuKasirState extends State<MenuKasir> {
                 ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(5.0),
-                      child: Image.network(
-                        "${BaseUrl.pathImage}/${x.gambar}",
-                        //   Image.memory(
-                        // bytes!,
-                        // width: 100.0,
-                        // height: 60.0,
-                        // ),
-                        height: 100,
-                        width: 60,
+                      child:
+                          // Image.network(
+                          //   "${BaseUrl.pathImage}/${x.gambar}",
+                          CachedNetworkImage(
+                        imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) =>
+                                CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
+                      //   height: 100,
+                      //   width: 60,
+                      // ),
                     ),
                     title: Text(
                       // "",
@@ -1560,8 +1632,15 @@ class _MenuKasirState extends State<MenuKasir> {
                               return AlertDialog(
                                 content: ListTile(
                                   isThreeLine: true,
-                                  leading: Image.network(
-                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  leading: CachedNetworkImage(
+                                    imageUrl:
+                                        "${BaseUrl.pathImage}/${x.gambar}",
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        CircularProgressIndicator(
+                                            value: downloadProgress.progress),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
                                   title: Text(
                                     '${x.nama}',
@@ -1750,10 +1829,14 @@ class _MenuKasirState extends State<MenuKasir> {
                     ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(5.0),
-                        child: Image.network(
-                          "${BaseUrl.pathImage}/${x.gambar}",
-                          height: 100,
-                          width: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                         ),
                       ),
                       title: Text(
@@ -1775,8 +1858,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                 return AlertDialog(
                                   content: ListTile(
                                     isThreeLine: true,
-                                    leading: Image.network(
-                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    leading: CachedNetworkImage(
+                                      imageUrl:
+                                          "${BaseUrl.pathImage}/${x.gambar}",
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
                                     ),
                                     title: Text(
                                       '${x.nama}',
@@ -1955,16 +2045,20 @@ class _MenuKasirState extends State<MenuKasir> {
                 ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(5.0),
-                      child: Image.network(
-                        "${BaseUrl.pathImage}/${x.gambar}",
-                        //   Image.memory(
-                        // bytes!,
-                        // width: 100.0,
-                        // height: 60.0,
-                        // ),
-                        height: 100,
-                        width: 60,
+                      child:
+                          // Image.network(
+                          //   "${BaseUrl.pathImage}/${x.gambar}",
+                          CachedNetworkImage(
+                        imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) =>
+                                CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
+                      //   height: 100,
+                      //   width: 60,
+                      // ),
                     ),
                     title: Text(
                       // "",
@@ -1985,8 +2079,15 @@ class _MenuKasirState extends State<MenuKasir> {
                               return AlertDialog(
                                 content: ListTile(
                                   isThreeLine: true,
-                                  leading: Image.network(
-                                    "${BaseUrl.pathImage}/${x.gambar}",
+                                  leading: CachedNetworkImage(
+                                    imageUrl:
+                                        "${BaseUrl.pathImage}/${x.gambar}",
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        CircularProgressIndicator(
+                                            value: downloadProgress.progress),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
                                   title: Text(
                                     '${x.nama}',
@@ -2175,10 +2276,14 @@ class _MenuKasirState extends State<MenuKasir> {
                     ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(5.0),
-                        child: Image.network(
-                          "${BaseUrl.pathImage}/${x.gambar}",
-                          height: 100,
-                          width: 60,
+                        child: CachedNetworkImage(
+                          imageUrl: "${BaseUrl.pathImage}/${x.gambar}",
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                         ),
                       ),
                       title: Text(
@@ -2200,8 +2305,15 @@ class _MenuKasirState extends State<MenuKasir> {
                                 return AlertDialog(
                                   content: ListTile(
                                     isThreeLine: true,
-                                    leading: Image.network(
-                                      "${BaseUrl.pathImage}/${x.gambar}",
+                                    leading: CachedNetworkImage(
+                                      imageUrl:
+                                          "${BaseUrl.pathImage}/${x.gambar}",
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
                                     ),
                                     title: Text(
                                       '${x.nama}',
@@ -2849,8 +2961,14 @@ class _MenuKasirState extends State<MenuKasir> {
                 return AlertDialog(
                   content: ListTile(
                     isThreeLine: true,
-                    leading: Image.network(
-                      "${BaseUrl.pathImage}/${listBarang.first.gambar}",
+                    leading: CachedNetworkImage(
+                      imageUrl:
+                          "${BaseUrl.pathImage}/${listBarang.first.gambar}",
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) =>
+                              CircularProgressIndicator(
+                                  value: downloadProgress.progress),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
                     ),
                     title: Text(
                       '${listBarang.first.nama}',
